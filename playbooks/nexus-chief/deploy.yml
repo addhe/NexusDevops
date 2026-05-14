@@ -1,0 +1,106 @@
+---
+# Playbook: Deploy NexusChiefCommander
+# =====================================
+# Deploys NexusChiefCommander (OpenClaw agent) to the provisioned VM
+#
+# Usage (dynamic inventory):
+#   ansible-playbook playbooks/nexus-chief/deploy.yml \
+#     -i inventory/nexus-chief/
+#
+# Usage (specific host):
+#   ansible-playbook playbooks/nexus-chief/deploy.yml \
+#     -i inventory/nexus-chief/ \
+#     --limit nexus-chief-001-prd
+
+- name: Deploy NexusChiefCommander
+  hosts: nexus_chief
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Load all vars
+      include_vars:
+        file: "{{ playbook_dir | dirname | dirname }}/inventory/nexus-chief/group_vars/all/main.yml"
+
+    - name: Load vault vars
+      include_vars:
+        file: "{{ playbook_dir | dirname | dirname }}/inventory/nexus-chief/group_vars/all/vault.yml"
+
+    - name: Load openclaw vars
+      include_vars:
+        file: "{{ playbook_dir | dirname | dirname }}/inventory/nexus-chief/group_vars/all/openclaw.yml"
+
+    - name: Load owner vars
+      include_vars:
+        file: "{{ playbook_dir | dirname | dirname }}/inventory/nexus-chief/group_vars/all/owner.yml"
+
+    - name: Load gcp vars
+      include_vars:
+        file: "{{ playbook_dir | dirname | dirname }}/inventory/nexus-chief/group_vars/all/gcp.yml"
+
+    - name: Wait for SSH
+      wait_for_connection:
+        timeout: 300
+
+    - name: Gather facts
+      setup:
+
+    - name: Display deployment info
+      debug:
+        msg: |
+          ================================
+          Deploying NexusChiefCommander
+          ================================
+          Host: {{ ansible_host | default(inventory_hostname) }}
+          Environment: production
+          Model: {{ openclaw_model }}
+          Gateway Port: {{ gateway_port }}
+          ================================
+
+  roles:
+    - role: openclaw-prereq
+      tags:
+        - prereq
+        - nodejs
+
+    - role: openclaw-install
+      tags:
+        - install
+        - openclaw
+
+    - role: openclaw-config
+      tags:
+        - config
+        - openclaw
+
+  post_tasks:
+    - name: Verify Telegram bot token
+      command: "grep -q 'botToken' /home/{{ openclaw_user }}/.openclaw/openclaw.json"
+      register: token_check
+      changed_when: false
+      failed_when: token_check.rc != 0
+
+    - name: Verify owner configuration
+      command: "grep -q '{{ owner_telegram_id }}' /home/{{ openclaw_user }}/.openclaw/openclaw.json"
+      register: owner_check
+      changed_when: false
+      failed_when: owner_check.rc != 0
+
+    - name: Display completion
+      debug:
+        msg: |
+          ================================
+          NexusChiefCommander Deployed! 🎛️
+          ================================
+          Host: {{ ansible_host | default(inventory_hostname) }}
+          Environment: production
+          Gateway Port: {{ gateway_port }}
+          Model: {{ openclaw_model }}
+          ================================
+          Security:
+          ✅ Owner: @{{ owner_username }} (ID: {{ owner_telegram_id }})
+          ✅ Bot: {{ bot_name }} ({{ bot_full_name }})
+          ================================
+          Test:
+          curl http://{{ ansible_host | default('localhost') }}:{{ gateway_port }}/status
+          ===================================

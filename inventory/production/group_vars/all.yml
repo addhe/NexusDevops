@@ -1,0 +1,73 @@
+---
+# =====================================
+# Common Variables - All Environments
+# =====================================
+# These variables apply to all environments
+
+# Organization
+org_name: "openclaw"
+org_short: "ocl"
+
+# Owner
+owner: "DevOps Team"
+owner_email: "devops@example.com"
+
+# Timezone
+system_timezone: "Asia/Jakarta"
+
+# Node.js Version
+nodejs_version: "22"
+
+# SSH Configuration
+ssh_port: 22
+ssh_permit_root_login: "no"
+ssh_password_authentication: "no"
+
+# Firewall
+firewall_allowed_tcp_ports:
+  - "{{ ssh_port }}"
+  - 80
+  - 443
+  - 8080
+
+# Logging
+log_retention_days: 30
+
+# Security
+selinux_state: disabled
+apparmor_enabled: true
+
+# Base packages for all VMs
+base_packages:
+  - curl
+  - wget
+  - git
+  - vim
+  - htop
+  - iotop
+  - ncdu
+  - tmux
+  - unzip
+  - software-properties-common
+  - apt-transport-https
+  - ca-certificates
+  - gnupg2
+  - lsb-release
+  - build-essential
+  - python3
+  - python3-pip
+  - python3-venv
+
+# Monitoring packages
+monitoring_packages:
+  - prometheus-node-exporter
+  - grafana-agent
+
+# Fail2ban
+fail2ban_enabled: true
+fail2ban_bantime: 3600
+fail2ban_maxretry: 5
+
+# Unattended upgrades
+unattended_upgrades_enabled: true
+unattended_upgrades_reboot: "false"

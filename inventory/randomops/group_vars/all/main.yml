@@ -1,0 +1,37 @@
+---
+# =====================================
+# RandomOps Bot - Common Configuration
+# =====================================
+# RandomBot: Rapid Autonomous Neural Digital Omni-processor BOT
+
+# Organization
+org_name: "RandomOps"
+org_short: "ro"
+application: "randomops"
+
+# GCP Project
+gcp_project: "awanmasterpiece"
+gcp_zone: "asia-southeast2-b"
+
+# Service Account
+gcp_service_account: "awan-master-service-account@awanmasterpiece.iam.gserviceaccount.com"
+
+# Network
+gcp_network: "openclaw-staging-network"
+gcp_subnet: "openclaw-staging-subnet"
+
+# Instance Settings
+instance_type: "n2d-standard-2"
+disk_size: 20
+disk_type: "pd-ssd"
+provisioning_model: "SPOT"
+
+# Tags
+instance_tags:
+  - "randomops"
+  - "staging"
+  - "openclaw"
+
+# System
+system_timezone: "Asia/Jakarta"
+nodejs_version: "22"

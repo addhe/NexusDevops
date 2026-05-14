@@ -1,0 +1,14 @@
+[Unit]
+Description=OpenClaw Worker Identity Configuration
+After=network.target openclaw.service
+Wants=openclaw.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/openclaw-worker-startup.sh
+RemainAfterExit=no
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

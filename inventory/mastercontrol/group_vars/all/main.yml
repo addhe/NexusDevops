@@ -1,0 +1,41 @@
+---
+# =====================================
+# MasterControl - All Environments
+# =====================================
+# Control plane bot for managing RandomOps infrastructure
+# RESTRICTED: DM only, accessible by BroAwn only
+
+# Organization
+org_name: "RandomOps"
+org_short: "ro"
+application: "mastercontrol"
+
+# GCP Project
+gcp_project: "awanmasterpiece"
+gcp_zone: "asia-southeast2-b"
+
+# Service Account
+gcp_service_account: "awan-master-service-account@awanmasterpiece.iam.gserviceaccount.com"
+
+# Network
+gcp_network: "openclaw-staging-network"
+gcp_subnet: "openclaw-staging-subnet"
+
+# Instance Settings
+instance_type: "n2d-standard-2"  # 2 vCPU, 8GB RAM for OpenClaw
+disk_size: 20
+disk_type: "pd-ssd"
+provisioning_model: "SPOT"  # Preemptible for cost savings
+
+# Tags
+instance_tags:
+  - "mastercontrol"
+  - "staging"
+  - "restricted"
+  - "dm-only"
+
+# Labels
+instance_labels:
+  environment: "staging"
+  role: "mastercontrol"
+  managed_by: "ansible"

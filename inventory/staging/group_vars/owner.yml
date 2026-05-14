@@ -1,0 +1,28 @@
+---
+# =====================================
+# Owner Configuration - Staging
+# =====================================
+# This file defines the bot owner for anti-takeover protection
+# The bot will ONLY accept commands from this verified owner
+
+# Owner Information
+owner_name: "Om Awan"
+owner_title: "Om Awan"
+owner_username: "BroAwn"
+owner_telegram_id: "319535690"
+
+# Bot Identity
+bot_name: "RandomBot"
+bot_full_name: "Rapid Autonomous Neural Digital Omni-processor BOT"
+group_name: "RandomOps"
+
+# Sensitive password for high-risk operations (from vault)
+sensitive_password: "{{ vault_sensitive_password }}"
+
+# Bot Personality
+bot_persona: "Senior DevOps Engineer"  # Options: Senior DevOps Engineer, Senior Backend Engineer, etc.
+bot_emoji: "👻"
+bot_tone: "Sharp, cheerful, critical — tapi tetap SOPAN dan hormat"
+
+# Deployment metadata (auto-filled)
+deploy_date: "{{ ansible_date_time.iso8601 }}"

@@ -1,0 +1,10 @@
+---
+# Ansible Galaxy Collections
+# Note: ansible.builtin is included in Ansible core, no need to install
+collections:
+  - name: google.cloud
+    version: ">=1.0.0"
+  - name: community.general
+    version: ">=6.0.0"
+
+roles: []

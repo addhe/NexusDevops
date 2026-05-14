@@ -1,0 +1,178 @@
+---
+# GCP Compute Role Tasks
+# ======================
+
+- name: Assert required variables
+  assert:
+    that:
+      - gcp_project_id is defined
+      - gcp_region is defined
+      - gcp_zone is defined
+    fail_msg: "Required GCP variables are not defined"
+    success_msg: "All required GCP variables are defined"
+
+- name: Set auth kind fact
+  set_fact:
+    gcp_auth: "{{ gcp_auth_kind | default('application') }}"
+    gcp_sa_file: "{{ gcp_service_account_file | default(omit) }}"
+
+- name: Create VPC Network if not exists
+  google.cloud.gcp_compute_network:
+    name: "{{ gcp_network }}"
+    project: "{{ gcp_project_id }}"
+    auth_kind: "{{ gcp_auth }}"
+    service_account_file: "{{ gcp_sa_file }}"
+    auto_create_subnetworks: false
+    state: present
+  register: vpc_network
+  run_once: true
+
+- name: Create Subnetwork if not exists
+  google.cloud.gcp_compute_subnetwork:
+    name: "{{ gcp_subnetwork }}"
+    network: "{{ vpc_network }}"
+    region: "{{ gcp_region }}"
+    ip_cidr_range: "10.{{ 10 if deploy_env == 'production' else 20 }}.0.0/24"
+    project: "{{ gcp_project_id }}"
+    auth_kind: "{{ gcp_auth }}"
+    service_account_file: "{{ gcp_sa_file }}"
+    state: present
+  register: subnetwork
+  run_once: true
+
+- name: Create Firewall Rule - SSH
+  google.cloud.gcp_compute_firewall:
+    name: "{{ org_short }}-{{ deploy_env }}-allow-ssh"
+    network: "{{ vpc_network }}"
+    project: "{{ gcp_project_id }}"
+    auth_kind: "{{ gcp_auth }}"
+    service_account_file: "{{ gcp_sa_file }}"
+    allowed:
+      - ip_protocol: tcp
+        ports:
+          - "22"
+    source_ranges:
+      - "0.0.0.0/0"
+    target_tags:
+      - "{{ deploy_env }}"
+    state: present
+  when: gcp_firewall_allow_ssh
+
+- name: Create Firewall Rule - HTTP
+  google.cloud.gcp_compute_firewall:
+    name: "{{ org_short }}-{{ deploy_env }}-allow-http"
+    network: "{{ vpc_network }}"
+    project: "{{ gcp_project_id }}"
+    auth_kind: "{{ gcp_auth }}"
+    service_account_file: "{{ gcp_sa_file }}"
+    allowed:
+      - ip_protocol: tcp
+        ports:
+          - "80"
+    source_ranges:
+      - "0.0.0.0/0"
+    target_tags:
+      - "{{ deploy_env }}"
+    state: present
+  when: gcp_firewall_allow_http
+
+- name: Create Firewall Rule - HTTPS
+  google.cloud.gcp_compute_firewall:
+    name: "{{ org_short }}-{{ deploy_env }}-allow-https"
+    network: "{{ vpc_network }}"
+    project: "{{ gcp_project_id }}"
+    auth_kind: "{{ gcp_auth }}"
+    service_account_file: "{{ gcp_sa_file }}"
+    allowed:
+      - ip_protocol: tcp
+        ports:
+          - "443"
+    source_ranges:
+      - "0.0.0.0/0"
+    target_tags:
+      - "{{ deploy_env }}"
+    state: present
+  when: gcp_firewall_allow_https
+
+- name: Create Firewall Rule - Gateway
+  google.cloud.gcp_compute_firewall:
+    name: "{{ org_short }}-{{ deploy_env }}-allow-gateway"
+    network: "{{ vpc_network }}"
+    project: "{{ gcp_project_id }}"
+    auth_kind: "{{ gcp_auth }}"
+    service_account_file: "{{ gcp_sa_file }}"
+    allowed:
+      - ip_protocol: tcp
+        ports:
+          - "8080"
+    source_ranges:
+      - "0.0.0.0/0"
+    target_tags:
+      - "{{ deploy_env }}"
+    state: present
+  when: gcp_firewall_allow_gateway
+
+- name: Generate instance name
+  set_fact:
+    instance_name: "{{ gcp_instance_name_prefix }}"
+
+- name: Display instance configuration
+  debug:
+    msg:
+      - "Creating instance: {{ instance_name }}"
+      - "Machine type: {{ gcp_machine_type_spot if gcp_spot_instance else gcp_machine_type }}"
+      - "Spot instance: {{ gcp_spot_instance }}"
+      - "Zone: {{ gcp_zone }}"
+      - "Labels: {{ gcp_instance_labels }}"
+
+- name: Create Compute Instance (Spot)
+  google.cloud.gcp_compute_instance:
+    name: "{{ instance_name }}"
+    project: "{{ gcp_project_id }}"
+    zone: "{{ gcp_zone }}"
+    auth_kind: "{{ gcp_auth }}"
+    service_account_file: "{{ gcp_sa_file }}"
+    machine_type: "{{ gcp_machine_type_spot }}"
+    disks:
+      - auto_delete: "{{ gcp_disk_auto_delete }}"
+        boot: true
+        initialize_params:
+          disk_size_gb: "{{ gcp_disk_size_gb }}"
+          disk_type: "{{ gcp_disk_type }}"
+          source_image: "projects/{{ gcp_image_project }}/global/images/family/{{ gcp_image_family }}"
+    network_interfaces:
+      - network: "{{ vpc_network }}"
+        subnetwork: "{{ subnetwork }}"
+        access_configs:
+          - name: External NAT
+            type: ONE_TO_ONE_NAT
+            network_tier: STANDARD
+    scheduling:
+      preemptible: "{{ gcp_spot_instance }}"
+      automatic_restart: "{{ not gcp_spot_instance }}"
+      on_host_maintenance: "{{ 'TERMINATE' if gcp_spot_instance else 'MIGRATE' }}"
+    service_accounts:
+      - email: "{{ gcp_service_account_email }}"
+        scopes: "{{ gcp_service_account_scopes }}"
+    labels: "{{ gcp_instance_labels }}"
+    tags:
+      items: "{{ gcp_instance_tags }}"
+    metadata: "{{ gcp_metadata }}"
+    state: present
+  register: compute_instance
+
+- name: Display created instance
+  debug:
+    msg:
+      - "Instance created: {{ compute_instance.name }}"
+      - "External IP: {{ compute_instance.networkInterfaces[0].accessConfigs[0].natIP }}"
+      - "Internal IP: {{ compute_instance.networkInterfaces[0].networkIP }}"
+      - "Status: {{ compute_instance.status }}"
+
+- name: Wait for instance to be running
+  wait_for:
+    host: "{{ compute_instance.networkInterfaces[0].accessConfigs[0].natIP }}"
+    port: 22
+    delay: 10
+    timeout: 300
+    state: started

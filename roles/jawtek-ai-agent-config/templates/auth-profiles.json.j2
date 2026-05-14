@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "profiles": {
+    "ollama:manual": {
+      "type": "token",
+      "provider": "ollama",
+      "token": "{{ vault_ollama_cloud_token }}"
+    }
+  },
+  "usageStats": {
+    "ollama:manual": {
+      "errorCount": 0,
+      "lastUsed": {{ ansible_date_time.epoch }}
+    }
+  }
+}

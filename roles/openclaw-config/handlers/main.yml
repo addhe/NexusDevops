@@ -1,0 +1,10 @@
+---
+- name: Restart openclaw
+  systemd:
+    name: openclaw
+    state: restarted
+
+- name: Reload openclaw
+  systemd:
+    name: openclaw
+    state: reloaded

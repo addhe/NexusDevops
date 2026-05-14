@@ -1,0 +1,35 @@
+---
+# =====================================
+# GCP Configuration - Production
+# =====================================
+
+# GCP Project
+gcp_project_id: "{{ vault_gcp_project_id }}"
+gcp_region: "asia-southeast2"  # Jakarta
+gcp_zone: "asia-southeast2-a"
+
+# Fallback to US Central if Jakarta not available
+gcp_fallback_region: "us-central1"
+gcp_fallback_zone: "us-central1-a"
+
+# GCP Service Account (from vault)
+gcp_service_account_email: "{{ vault_gcp_service_account_email }}"
+gcp_service_account_key: "{{ vault_gcp_service_account_key }}"
+
+# Network
+gcp_network: "openclaw-production-network"
+gcp_subnetwork: "openclaw-production-subnet"
+
+# Labels (for resource management)
+gcp_common_labels:
+  environment: "production"
+  managed_by: "ansible"
+  owner: "{{ owner }}"
+  project: "{{ org_name }}"
+  cost_center: "production-infrastructure"
+
+# Tags
+gcp_common_tags:
+  - "production"
+  - "ansible-managed"
+  - "critical"

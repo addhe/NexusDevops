@@ -1,0 +1,9 @@
+---
+- name: Deploy OpenClaw
+  hosts: staging
+  become: yes
+
+  roles:
+    - ollama
+    - openclaw-install
+    - openclaw-config

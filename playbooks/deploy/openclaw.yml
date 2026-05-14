@@ -1,0 +1,95 @@
+---
+# Playbook: Deploy OpenClaw
+# =========================
+# This playbook deploys OpenClaw to configured VMs
+#
+# Usage:
+#   ansible-playbook playbooks/deploy/openclaw.yml -e "deploy_env=staging gcp_worker_role=devops gcp_worker_id=001"
+
+- name: Deploy OpenClaw
+  hosts: "{{ deploy_env | default('staging') }}"
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Load all vars
+      include_vars:
+        file: "{{ playbook_dir }}/../../inventory/{{ deploy_env | default('staging') }}/group_vars/all.yml"
+
+    - name: Load vault vars
+      include_vars:
+        file: "{{ playbook_dir }}/../../inventory/{{ deploy_env | default('staging') }}/group_vars/vault.yml"
+
+    - name: Load gcp vars
+      include_vars:
+        file: "{{ playbook_dir }}/../../inventory/{{ deploy_env | default('staging') }}/group_vars/gcp.yml"
+
+    - name: Load openclaw vars
+      include_vars:
+        file: "{{ playbook_dir }}/../../inventory/{{ deploy_env | default('staging') }}/group_vars/openclaw.yml"
+
+    - name: Wait for SSH
+      wait_for_connection:
+        timeout: 300
+
+    - name: Gather facts
+      setup:
+
+    - name: Set worker name fact
+      set_fact:
+        worker_name: "ocl-worker-{{ gcp_worker_role | default('devops') }}-{{ gcp_worker_id | default('001') }}-{{ 'stg' if deploy_env == 'staging' else 'prd' }}"
+
+    - name: Display deployment info
+      debug:
+        msg: |
+          ================================
+          Deploying OpenClaw Worker
+          ================================
+          Worker Name: {{ worker_name }}
+          Role: {{ gcp_worker_role | default('devops') }}
+          ID: {{ gcp_worker_id | default('001') }}
+          Environment: {{ deploy_env | default('staging') }}
+          ================================
+
+  roles:
+    - role: ollama
+      tags:
+        - ollama
+        - llm
+
+    - role: openclaw-prereq
+      tags:
+        - prereq
+        - nodejs
+
+    - role: openclaw-install
+      tags:
+        - install
+        - openclaw
+
+    - role: openclaw-config
+      tags:
+        - config
+        - openclaw
+
+  post_tasks:
+    - name: Display completion
+      debug:
+        msg: |
+          ================================
+          OpenClaw Deployment Complete!
+          ================================
+          Worker Name: {{ worker_name }}
+          Worker Role: {{ gcp_worker_role | default('devops') }}
+          Environment: {{ deploy_env | default('staging') }}
+          Gateway Port: {{ gateway_port }}
+          Model: {{ openclaw_model }}
+          ================================
+          The worker is now aware of its identity:
+          - IDENTITY.md contains role-specific persona
+          - SOUL.md has worker personality
+          - USER.md has worker context
+          ================================
+          Test:
+          curl http://{{ ansible_host }}:{{ gateway_port }}/status
+          ================================

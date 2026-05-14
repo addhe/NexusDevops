@@ -1,0 +1,44 @@
+---
+# Playbook: Provision MasterControl VM
+# =====================================
+# Provisions a GCP VM for IrishEcho MasterControl bot
+#
+# Usage:
+#   ansible-playbook playbooks/provision/mastercontrol-vm.yml
+
+- name: Provision MasterControl VM
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  pre_tasks:
+    - name: Display info
+      debug:
+        msg: |
+          Provisioning MasterControl VM
+          Environment: {{ environment | default('staging') }}
+          Zone: {{ gcp_zone }}
+
+  roles:
+    - role: gcp-compute
+      vars:
+        gcp_instance_name: "mastercontrol-001-stg"
+        gcp_machine_type: "n2d-standard-2"
+        gcp_disk_size: 20
+        gcp_provisioning_model: "SPOT"
+
+  post_tasks:
+    - name: Display provisioned instance info
+      debug:
+        msg: |
+          ================================
+          MasterControl VM Provisioned!
+          ================================
+          Instance Name: {{ instance_name }}
+          External IP: {{ compute_instance.networkInterfaces[0].accessConfigs[0].natIP }}
+          Zone: {{ gcp_zone }}
+          ================================
+          Next steps:
+          1. ansible-playbook playbooks/deploy/base.yml
+          2. ansible-playbook playbooks/deploy/mastercontrol.yml
+          ================================

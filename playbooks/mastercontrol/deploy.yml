@@ -1,0 +1,84 @@
+---
+# Playbook: Deploy MasterControl Bot
+# ==================================
+# Deploys IrishEcho MasterControl bot to configured VM
+#
+# Usage:
+#   ansible-playbook playbooks/deploy/mastercontrol.yml --ask-vault-pass
+
+- name: Deploy MasterControl
+  hosts: mastercontrol
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Wait for SSH
+      wait_for_connection:
+        timeout: 300
+
+    - name: Gather facts
+      setup:
+
+    - name: Verify DM-only configuration
+      debug:
+        msg: |
+          ⚠️  MASTERCONTROL SECURITY WARNING ⚠️
+
+          This bot is configured with:
+          • DM ONLY - No group access
+          • OWNER ONLY - Single user (@BroAwn, ID: {{ owner_telegram_id }})
+          • RESTRICTED - Control plane access
+
+          Do NOT modify these settings.
+
+  roles:
+    - role: openclaw-prereq
+      tags:
+        - prereq
+        - nodejs
+
+    - role: openclaw-install
+      tags:
+        - install
+        - openclaw
+
+    - role: mastercontrol-config
+      tags:
+        - config
+        - mastercontrol
+
+  post_tasks:
+    - name: Verify DM-only configuration
+      command: "grep -q '\"dmPolicy\": \"allowlist\"' /home/{{ openclaw_user }}/.openclaw/openclaw.json"
+      register: dm_check
+      changed_when: false
+      failed_when: dm_check.rc != 0
+
+    - name: Verify owner-only configuration
+      command: "grep -q '\"{{ owner_telegram_id }}\"' /home/{{ openclaw_user }}/.openclaw/openclaw.json"
+      register: owner_check
+      changed_when: false
+      failed_when: owner_check.rc != 0
+
+    - name: Display completion
+      debug:
+        msg: |
+          ================================
+          IrishEcho MasterControl Deployed!
+          ================================
+          Environment: {{ environment | default('staging') }}
+          Gateway Port: {{ gateway_port }}
+          Model: {{ openclaw_model }}
+          ================================
+          Security Configuration:
+          ✅ DM ONLY - No group access
+          ✅ OWNER ONLY - Single user
+          ✅ Bot Token: {{ telegram_bot_token[:20] }}...
+          ✅ Owner: @BroAwn (ID: {{ owner_telegram_id }})
+          ================================
+          Test:
+          curl http://{{ ansible_host | default('localhost') }}:{{ gateway_port }}/status
+          ================================
+
+          IMPORTANT: Test in DM with @IrishEcho_MasterControl_Bot
+          ================================

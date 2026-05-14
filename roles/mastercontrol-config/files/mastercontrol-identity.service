@@ -1,0 +1,12 @@
+[Unit]
+Description=IrishEcho MasterControl Startup Identity
+After=network.target
+Before=openclaw.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/mastercontrol-startup.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

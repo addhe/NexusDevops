@@ -1,0 +1,15 @@
+---
+# OpenClaw Prerequisites Role Defaults
+
+# User Configuration
+openclaw_user: "openclaw"
+openclaw_group: "openclaw"
+
+# Node.js Version
+nodejs_version: "22"
+
+# Timezone (inherited from base role)
+system_timezone: "Asia/Jakarta"
+
+# Gateway Port
+gateway_port: 8080

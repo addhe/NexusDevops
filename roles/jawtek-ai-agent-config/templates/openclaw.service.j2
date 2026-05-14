@@ -1,0 +1,35 @@
+[Unit]
+Description={{ openclaw_service_description | default('JawTek AI Agent - OpenClaw Gateway') }}
+Documentation=https://docs.openclaw.ai
+After=network.target
+
+[Service]
+Type=simple
+User={{ openclaw_user }}
+Group={{ openclaw_group }}
+WorkingDirectory=/home/{{ openclaw_user }}/.openclaw
+Environment="HOME=/home/{{ openclaw_user }}"
+Environment="OLLAMA_API_KEY={{ vault_ollama_api_key }}"
+{% if gateway_token is defined %}
+Environment="GATEWAY_TOKEN={{ gateway_token }}"
+{% endif %}
+ExecStart=/usr/bin/openclaw gateway
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=openclaw
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/home/{{ openclaw_user }}/.openclaw /var/tmp/openclaw-compile-cache
+
+# Resource limits
+LimitNOFILE=65535
+TasksMax=4096
+
+[Install]
+WantedBy=multi-user.target

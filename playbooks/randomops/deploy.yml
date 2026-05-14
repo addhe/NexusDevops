@@ -1,0 +1,101 @@
+---
+# Playbook: Deploy RandomOps Bot
+# ================================
+# Deploys RandomBot (RandomOps) to configured VMs
+# Uses existing openclaw-* roles + openclaw-config for RandomOps persona
+#
+# Usage (dynamic inventory):
+#   ansible-playbook playbooks/randomops/deploy.yml \
+#     -i inventory/randomops/ \
+#     -e "gcp_worker_role=devops gcp_worker_id=001"
+#
+# Usage (specific host):
+#   ansible-playbook playbooks/randomops/deploy.yml \
+#     -i inventory/randomops/ \
+#     --limit ocl-worker-devops-001-stg
+
+- name: Deploy RandomOps Bot
+  hosts: randomops
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Wait for SSH
+      wait_for_connection:
+        timeout: 300
+
+    - name: Gather facts
+      setup:
+
+    - name: Set worker name fact
+      set_fact:
+        worker_name: "ocl-worker-{{ gcp_worker_role | default('devops') }}-{{ gcp_worker_id | default('001') }}-{{ deploy_env | default('stg') }}"
+
+    - name: Display deployment info
+      debug:
+        msg: |
+          ================================
+          Deploying RandomOps Bot
+          ================================
+          Worker: {{ worker_name }}
+          Role: {{ gcp_worker_role | default('devops') }}
+          ID: {{ gcp_worker_id | default('001') }}
+          Environment: {{ deploy_env | default('staging') }}
+          Model: {{ openclaw_model }}
+          ================================
+
+  roles:
+    - role: openclaw-prereq
+      tags:
+        - prereq
+        - nodejs
+
+    - role: openclaw-install
+      tags:
+        - install
+        - openclaw
+
+    - role: openclaw-config
+      tags:
+        - config
+        - openclaw
+
+  post_tasks:
+    - name: Verify Telegram bot token
+      command: "grep -q 'botToken' /home/{{ openclaw_user }}/.openclaw/openclaw.json"
+      register: token_check
+      changed_when: false
+      failed_when: token_check.rc != 0
+
+    - name: Verify owner configuration
+      command: "grep -q '\"{{ owner_telegram_id }}\"' /home/{{ openclaw_user }}/.openclaw/openclaw.json"
+      register: owner_check
+      changed_when: false
+      failed_when: owner_check.rc != 0
+
+    - name: Verify Ollama provider
+      command: "grep -q 'ollama' /home/{{ openclaw_user }}/.openclaw/agents/main/agent/auth-profiles.json"
+      register: ollama_check
+      changed_when: false
+      ignore_errors: yes
+
+    - name: Display completion
+      debug:
+        msg: |
+          ================================
+          RandomOps Bot Deployed! 🤖
+          ================================
+          Worker: {{ worker_name }}
+          Role: {{ gcp_worker_role | default('devops') }}
+          Environment: {{ deploy_env | default('staging') }}
+          Gateway Port: {{ gateway_port }}
+          Model: {{ openclaw_model }}
+          ================================
+          Security:
+          ✅ Owner: @{{ owner_username }} (ID: {{ owner_telegram_id }})
+          ✅ Bot: {{ bot_name }} ({{ bot_full_name }})
+          ✅ Ollama Provider: {{ 'Registered' if ollama_check.rc == 0 else 'NOT registered' }}
+          ================================
+          Test:
+          curl http://{{ ansible_host | default('localhost') }}:{{ gateway_port }}/status
+          ================================

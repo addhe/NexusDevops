@@ -1,0 +1,40 @@
+---
+# =====================================
+# NexusChiefCommander - OpenClaw Configuration
+# =====================================
+
+# Application
+openclaw_version: "latest"
+openclaw_user: "openclaw"
+openclaw_group: "openclaw"
+openclaw_workspace: "/home/openclaw/.openclaw/workspace"
+
+# Service
+openclaw_service_name: "openclaw"
+openclaw_service_description: "NexusChiefCommander - Infrastructure Control Plane Agent"
+
+# Gateway
+gateway_port: 18789
+gateway_bind: "lan"
+gateway_mode: "local"
+
+# Telegram (from vault)
+telegram_bot_token: "{{ vault_telegram_bot_token }}"
+telegram_allowed_users: "{{ vault_telegram_allowed_users }}"
+
+# Gateway Auth (from vault)
+gateway_token: "{{ vault_gateway_token }}"
+
+# =====================================
+# Ollama Configuration
+# =====================================
+ollama_cloud_enabled: true
+ollama_cloud_api_key: "{{ vault_ollama_api_key }}"
+ollama_cloud_host: "https://ollama.com"
+ollama_cloud_model: "glm-5.1"
+
+# OpenClaw Model
+openclaw_model: "ollama/{{ ollama_cloud_model }}"
+
+# Logging
+openclaw_log_level: "info"

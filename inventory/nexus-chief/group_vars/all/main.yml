@@ -1,0 +1,67 @@
+---
+# =====================================
+# NexusChiefCommander - Common Configuration
+# =====================================
+# NexusChiefCommander - Infrastructure Control Plane Agent for ai-core-system-bot-prd
+
+# Organization
+org_name: "NexusChiefCommander"
+org_short: "ncc"
+application: "nexus-chief"
+
+# GCP Project
+gcp_project: "ai-core-system-bot-stg"
+gcp_project_id: "ai-core-system-bot-stg"
+gcp_region: "asia-southeast2"
+gcp_zone: "asia-southeast2-a"
+
+# Service Account
+gcp_service_account: "ai-core-system-bot@ai-core-system-bot-stg.iam.gserviceaccount.com"
+
+# Network - use custom-vpc
+gcp_network: "custom-vpc"
+gcp_subnet: "custom-vpc-dev-subnet"
+
+# Instance Settings
+instance_type: "e2-standard-2"
+disk_size: 30
+disk_type: "pd-ssd"
+provisioning_model: "SPOT"
+
+# Tags
+instance_tags:
+  - "nexus-chief"
+  - "production"
+  - "openclaw"
+
+# System
+system_timezone: "Asia/Jakarta"
+nodejs_version: "22"
+
+# Owner
+owner: "Om Awan"
+owner_email: "awan@randomops.io"
+
+# SSH Configuration
+ssh_port: 22
+ssh_permit_root_login: "no"
+ssh_password_authentication: "no"
+
+# Firewall
+firewall_allowed_tcp_ports:
+  - "{{ ssh_port }}"
+  - 80
+  - 443
+  - 18789
+
+# Logging
+log_retention_days: 30
+
+# Security
+selinux_state: disabled
+apparmor_enabled: true
+
+# Fail2ban
+fail2ban_enabled: true
+fail2ban_bantime: 3600
+fail2ban_maxretry: 5

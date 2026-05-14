@@ -1,0 +1,30 @@
+[Unit]
+Description=Ollama Service
+Documentation=https://ollama.com
+After=network.target
+
+[Service]
+Type=simple
+User={{ ollama_user }}
+Group={{ ollama_group }}
+WorkingDirectory=/var/lib/ollama
+ExecStart=/usr/local/bin/ollama serve
+Restart=on-failure
+RestartSec=10
+
+# Environment
+Environment="OLLAMA_HOST=0.0.0.0:{{ ollama_port }}"
+{% for key, value in ollama_env.items() %}
+Environment="{{ key }}={{ value }}"
+{% endfor %}
+
+# Limits
+LimitNOFILE=65535
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ollama
+
+[Install]
+WantedBy=multi-user.target

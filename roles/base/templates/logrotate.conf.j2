@@ -1,0 +1,17 @@
+# Base logrotate configuration
+/var/log/syslog
+/var/log/auth.log
+/var/log/kern.log
+/var/log/dmesg
+{
+    rotate {{ base_log_retention }}
+    daily
+    missingok
+    notifempty
+    compress
+    delaycompress
+    sharedscripts
+    postrotate
+        /usr/lib/rsyslog/rsyslog-rotate
+    endscript
+}

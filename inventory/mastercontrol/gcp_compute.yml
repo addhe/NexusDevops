@@ -1,0 +1,35 @@
+---
+# GCP Dynamic Inventory for MasterControl
+# Auto-discovers VMs based on labels, no manual IP updates needed
+# Filename MUST end with .gcp.yml or .gcp_compute.yml
+
+plugin: google.cloud.gcp_compute
+
+# GCP Project & Auth (uses gcloud application-default credentials)
+projects:
+  - awanmasterpiece
+auth_kind: application
+zones:
+  - asia-southeast2-b
+
+# Only discover mastercontrol VMs
+filters:
+  - "labels.role = mastercontrol"
+  - "status = RUNNING"
+
+# Use VM name as hostname (not IP)
+hostnames:
+  - name
+
+# Map to the 'mastercontrol' group that playbooks expect
+keyed_groups:
+  - key: labels.role
+    prefix: ""
+    separator: ""
+
+# Map GCP fields to Ansible variables
+compose:
+  ansible_host: networkInterfaces[0].accessConfigs[0].natIP
+  deploy_env: labels.environment
+  role: labels.role
+  worker_id: labels.id

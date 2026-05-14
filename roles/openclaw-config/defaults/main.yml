@@ -1,0 +1,92 @@
+---
+# OpenClaw Configuration Role Defaults
+# These are fallback values - actual values come from group_vars/openclaw.yml and vault.yml
+
+# User
+openclaw_user: "openclaw"
+openclaw_group: "openclaw"
+
+# Service
+openclaw_service_name: "openclaw-gateway"
+openclaw_service_description: "OpenClaw Gateway"
+
+# Workspace
+openclaw_workspace: "/home/openclaw/.openclaw/workspace"
+
+# Gateway
+gateway_port: 8080
+gateway_bind: "lan"
+gateway_mode: "local"
+
+# Ollama Cloud - will be overridden by group_vars
+ollama_cloud_enabled: true
+ollama_cloud_host: "https://ollama.com"
+ollama_cloud_model: "glm-5"
+ollama_cloud_api_key: ""
+
+# Model
+openclaw_model: "ollama/glm-5"
+
+# Telegram - will be overridden by vault
+telegram_bot_token: ""
+telegram_allowed_users: []
+
+# Gateway auth
+gateway_token: ""
+
+# OpenAI
+openai_api_key: ""
+
+# Worker Persona Configuration
+# These define the personality and identity for each worker type
+gcp_worker_role: "devops"
+gcp_worker_id: "001"
+worker_name: "ocl-worker-{{ gcp_worker_role }}-{{ gcp_worker_id }}-{{ deploy_env | default('stg') }}"
+
+# Role-specific persona definitions
+worker_personas:
+  devops:
+    title: "Senior DevOps Engineer"
+    description: "Infrastructure automation, CI/CD, cloud platforms, monitoring"
+    emoji: "🛠️"
+    file_prefix: "devops"
+  backend:
+    title: "Senior Backend Engineer"
+    description: "APIs, databases, microservices, performance optimization"
+    emoji: "🖥️"
+    file_prefix: "backend"
+  frontend:
+    title: "Senior Frontend Engineer"
+    description: "UI/UX, web frameworks, performance, accessibility"
+    emoji: "🎨"
+    file_prefix: "frontend"
+  test-engineer:
+    title: "Senior Test Engineer"
+    description: "Test automation, quality assurance, CI/CD testing"
+    emoji: "🧪"
+    file_prefix: "test-engineer"
+  infosec:
+    title: "Senior Security Engineer"
+    description: "Security assessment, penetration testing, compliance"
+    emoji: "🔒"
+    file_prefix: "infosec"
+  pm:
+    title: "Product Manager"
+    description: "Product strategy, roadmap, stakeholder management"
+    emoji: "📋"
+    file_prefix: "pm"
+  tpm:
+    title: "Technical Program Manager"
+    description: "Program management, cross-team coordination, technical planning"
+    emoji: "📅"
+    file_prefix: "tpm"
+  mobile-engineer:
+    title: "Senior Mobile Engineer"
+    description: "iOS, Android, cross-platform, mobile architecture"
+    emoji: "📱"
+    file_prefix: "mobile-engineer"
+  control-plane:
+    title: "Infrastructure Control Plane Commander"
+    description: "VM management, monitoring, deployments, infrastructure orchestration"
+    emoji: "🎛️"
+    file_prefix: "control-plane"

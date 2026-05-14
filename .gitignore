@@ -1,0 +1,32 @@
+# Ansible Vault
+*.vault.yml
+!vault.yml.example
+
+# Secrets
+**/group_vars/**/vault.yml
+!**/group_vars/**/vault.yml.example
+
+# Service account keys
+*.json
+!package.json
+
+# OS
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+
+# Ansible
+*.retry
+.ansible/
+
+# IDE
+.idea/
+.vscode/
+*.code-workspace

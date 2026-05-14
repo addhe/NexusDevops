@@ -1,0 +1,161 @@
+---
+# Ollama Installation Role
+
+- name: Check if ollama is already installed
+  stat:
+    path: /usr/local/bin/ollama
+  register: ollama_binary
+
+- name: Check if ollama service exists
+  stat:
+    path: /etc/systemd/system/ollama.service
+  register: ollama_service
+
+- name: Create ollama group
+  group:
+    name: "{{ ollama_group }}"
+    system: yes
+    state: present
+  when: ollama_create_user | bool
+
+- name: Create ollama user
+  user:
+    name: "{{ ollama_user }}"
+    group: "{{ ollama_group }}"
+    system: yes
+    shell: /bin/bash
+    home: /var/lib/ollama
+    create_home: yes
+  when: ollama_create_user | bool
+
+- name: Create ollama directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ollama_user }}"
+    group: "{{ ollama_group }}"
+    mode: '0755'
+  loop:
+    - /var/lib/ollama
+    - /var/log/ollama
+
+- name: Download ollama install script
+  get_url:
+    url: https://ollama.com/install.sh
+    dest: /tmp/ollama-install.sh
+    mode: '0755'
+  when: not ollama_binary.stat.exists
+
+- name: Install ollama (official script)
+  shell: /tmp/ollama-install.sh
+  args:
+    creates: /usr/local/bin/ollama
+  environment:
+    OLLAMA_VERSION: "{{ ollama_version }}"
+  when: not ollama_binary.stat.exists
+
+- name: Ensure ollama binary exists
+  stat:
+    path: /usr/local/bin/ollama
+  register: ollama_installed
+
+- name: Fail if ollama not installed
+  fail:
+    msg: "Ollama installation failed"
+  when: not ollama_installed.stat.exists
+
+- name: Create custom ollama systemd service
+  template:
+    src: ollama.service.j2
+    dest: /etc/systemd/system/ollama.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart ollama
+  when: ollama_service.stat.exists or ollama_binary.stat.exists
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Enable ollama service
+  systemd:
+    name: ollama
+    enabled: yes
+
+- name: Start ollama service
+  systemd:
+    name: ollama
+    state: started
+
+- name: Wait for ollama to be ready
+  wait_for:
+    port: "{{ ollama_port }}"
+    host: 127.0.0.1
+    delay: 5
+    timeout: 120
+
+- name: Pull ollama models (local models only)
+  command: "ollama pull {{ item }}"
+  loop: "{{ ollama_models }}"
+  when: 
+    - ollama_models | length > 0
+    - "':cloud' not in item"  # Skip cloud models
+  become: yes
+  become_user: "{{ ollama_user }}"
+  async: 600
+  poll: 30
+
+- name: List installed models
+  command: ollama list
+  register: ollama_models_list
+  changed_when: false
+  become: yes
+  become_user: "{{ ollama_user }}"
+
+- name: Display installed models
+  debug:
+    var: ollama_models_list.stdout_lines
+
+# ===========================================
+# Ollama Cloud API Configuration
+# ===========================================
+
+- name: Create ollama config directory
+  file:
+    path: "{{ ollama_env_file | dirname }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Configure Ollama Cloud API key
+  template:
+    src: ollama-environment.j2
+    dest: "{{ ollama_env_file }}"
+    owner: root
+    group: root
+    mode: '0600'
+  when: ollama_cloud_enabled | bool and ollama_cloud_api_key | length > 0
+  no_log: true
+
+- name: Update ollama service with EnvironmentFile
+  lineinfile:
+    path: /etc/systemd/system/ollama.service
+    insertafter: '^Environment='
+    line: 'EnvironmentFile={{ ollama_env_file }}'
+    state: present
+  when: ollama_cloud_enabled | bool and ollama_cloud_api_key | length > 0
+  notify: Restart ollama
+
+- name: Display Ollama Cloud configuration
+  debug:
+    msg: |
+      ========================================
+      Ollama Cloud API Configuration
+      ========================================
+      Enabled: {{ ollama_cloud_enabled }}
+      Host: {{ ollama_cloud_host }}
+      Model: {{ ollama_cloud_model }}
+      API Key: {{ 'configured' if ollama_cloud_api_key | length > 0 else 'not set' }}
+      ========================================

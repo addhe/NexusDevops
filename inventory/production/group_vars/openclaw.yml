@@ -1,0 +1,36 @@
+---
+# =====================================
+# OpenClaw Configuration - Production
+# =====================================
+
+# Application
+openclaw_version: "latest"
+openclaw_user: "openclaw"
+openclaw_group: "openclaw"
+openclaw_workspace: "/home/openclaw/.openclaw/workspace"
+
+# Service Configuration
+openclaw_service_name: "openclaw-gateway"
+openclaw_service_description: "OpenClaw Gateway - Production"
+openclaw_service_after: "network.target"
+
+# Gateway
+gateway_port: 8080
+gateway_bind: "0.0.0.0"
+gateway_mode: "local"
+
+# Telegram (from vault)
+telegram_bot_token: "{{ vault_telegram_bot_token }}"
+telegram_allowed_users: "{{ vault_telegram_allowed_users }}"
+
+# Gateway Auth (from vault)
+gateway_token: "{{ vault_gateway_token }}"
+
+# OpenAI (from vault)
+openai_api_key: "{{ vault_openai_api_key }}"
+
+# Model
+openclaw_model: "ollama/glm-5:cloud"
+
+# Logging
+openclaw_log_level: "info"  # Less verbose for production

@@ -1,0 +1,47 @@
+---
+# Ollama Installation Role Defaults
+
+# Ollama version (leave empty for latest)
+ollama_version: ""
+
+# Ollama install directory
+ollama_install_dir: /usr/local/bin
+
+# Models to pull (list of model names - LOCAL models only, not cloud models)
+# Cloud models (e.g., glm-5:cloud) don't need to be pulled
+ollama_models: []
+
+# Service user
+ollama_user: ollama
+ollama_group: ollama
+
+# Whether to create ollama user
+ollama_create_user: true
+
+# API port
+ollama_port: 11434
+
+# Environment variables for ollama
+ollama_env: {}
+
+# ===========================================
+# Ollama Cloud API Configuration
+# ===========================================
+
+# Enable Ollama Cloud API mode
+# When enabled, OpenClaw will use ollama.com API directly instead of local Ollama
+ollama_cloud_enabled: false
+
+# Ollama Cloud API key (get from https://ollama.com/settings/keys)
+# This should be stored in Ansible Vault for security
+ollama_cloud_api_key: ""
+
+# Ollama Cloud API endpoint
+ollama_cloud_host: "https://ollama.com"
+
+# Default model to use for OpenClaw (when using cloud API)
+# Available models: glm-5, glm-4.7, deepseek-v3.2, qwen3.5:397b, etc.
+ollama_cloud_model: "glm-5"
+
+# Environment file path for Ollama
+ollama_env_file: /etc/ollama/environment

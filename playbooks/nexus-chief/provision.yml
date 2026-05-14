@@ -1,0 +1,80 @@
+---
+# Playbook: Provision NexusChiefCommander VM
+# ===========================================
+# Provisions a GCP e2-standard-2 spot instance for NexusChiefCommander
+#
+# Usage:
+#   ansible-playbook playbooks/nexus-chief/provision.yml
+
+- name: Provision NexusChiefCommander VM
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  pre_tasks:
+    - name: Include all vars
+      include_vars:
+        file: "{{ playbook_dir | dirname | dirname }}/inventory/nexus-chief/group_vars/all/main.yml"
+
+    - name: Include vault vars
+      include_vars:
+        file: "{{ playbook_dir | dirname | dirname }}/inventory/nexus-chief/group_vars/all/vault.yml"
+
+    - name: Include gcp vars
+      include_vars:
+        file: "{{ playbook_dir | dirname | dirname }}/inventory/nexus-chief/group_vars/all/gcp.yml"
+
+    - name: Display provision info
+      debug:
+        msg: |
+          ================================
+          Provisioning NexusChiefCommander
+          ================================
+          Project: {{ gcp_project_id }}
+          Zone: {{ gcp_zone }}
+          Machine Type: {{ instance_type }}
+          Disk: {{ disk_size }}GB {{ disk_type }}
+          Network: {{ gcp_network }} / {{ gcp_subnet }}
+          Spot: {{ provisioning_model }}
+          ================================
+
+  roles:
+    - role: gcp-compute
+      vars:
+        gcp_instance_name: "nexus-chief-001-prd"
+        gcp_machine_type: "{{ instance_type }}"
+        gcp_machine_type_spot: "{{ instance_type }}"
+        gcp_disk_size_gb: "{{ disk_size }}"
+        gcp_disk_type: "{{ disk_type }}"
+        gcp_spot_instance: "{{ provisioning_model == 'SPOT' }}"
+        gcp_network: "{{ gcp_network }}"
+        gcp_subnetwork: "{{ gcp_subnet }}"
+        gcp_instance_labels:
+          environment: "production"
+          managed_by: "ansible"
+          project: "{{ org_name }}"
+          role: "control-plane"
+          cost_center: "production-infrastructure"
+        gcp_instance_tags:
+          - "production"
+          - "nexus-chief"
+          - "ansible-managed"
+        gcp_firewall_allow_ssh: true
+        gcp_firewall_allow_http: false
+        gcp_firewall_allow_https: false
+        gcp_firewall_allow_gateway: true
+
+  post_tasks:
+    - name: Display provisioned instance info
+      debug:
+        msg: |
+          ================================
+          NexusChiefCommander VM Provisioned!
+          ================================
+          Instance Name: {{ instance_name | default(gcp_instance_name) }}
+          External IP: {{ compute_instance.networkInterfaces[0].accessConfigs[0].natIP | default('N/A') }}
+          Zone: {{ gcp_zone }}
+          ================================
+          Next steps:
+          1. ansible-playbook playbooks/nexus-chief/deploy.yml
+          ===================================

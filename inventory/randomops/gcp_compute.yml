@@ -1,0 +1,40 @@
+---
+# GCP Dynamic Inventory for RandomOps Bot
+# Auto-discovers VMs based on labels
+# Filename MUST end with .gcp.yml or .gcp_compute.yml
+
+plugin: google.cloud.gcp_compute
+
+# GCP Project & Auth (uses gcloud application-default credentials)
+projects:
+  - awanmasterpiece
+auth_kind: application
+zones:
+  - asia-southeast2-b
+
+# Discover RandomOps worker VMs
+filters:
+  - "labels.application = randomops"
+  - "status = RUNNING"
+
+# Use VM name as hostname
+hostnames:
+  - name
+
+# Map to groups by role label
+keyed_groups:
+  # Creates group 'randomops' from labels.application
+  - key: labels.application
+    prefix: ""
+    separator: ""
+  # Creates groups like 'role_devops', 'role_backend'
+  - key: labels.role
+    prefix: role
+    separator: "_"
+
+# Map GCP fields to Ansible variables
+compose:
+  ansible_host: networkInterfaces[0].accessConfigs[0].natIP
+  deploy_env: labels.environment
+  gcp_worker_role: labels.role
+  gcp_worker_id: labels.id

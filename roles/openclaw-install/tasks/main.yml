@@ -1,0 +1,46 @@
+---
+# OpenClaw Installation Role
+
+- name: Install OpenClaw globally
+  npm:
+    name: openclaw
+    global: yes
+    state: latest
+  environment:
+    PATH: "/usr/bin:{{ ansible_env.PATH }}"
+
+- name: Verify OpenClaw installation
+  command: openclaw --version
+  register: openclaw_version_output
+  changed_when: false
+
+- name: Display OpenClaw version
+  debug:
+    msg: "OpenClaw version: {{ openclaw_version_output.stdout }}"
+
+- name: Ensure OpenClaw config directory exists
+  file:
+    path: "/home/{{ openclaw_user }}/.openclaw"
+    state: directory
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_user }}"
+    mode: '0700'
+
+- name: Ensure workspace directory exists
+  file:
+    path: "/home/{{ openclaw_user }}/.openclaw/workspace"
+    state: directory
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_user }}"
+    mode: '0755'
+
+- name: Ensure memory and skills directories exist
+  file:
+    path: "/home/{{ openclaw_user }}/.openclaw/workspace/{{ item }}"
+    state: directory
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_user }}"
+    mode: '0755'
+  loop:
+    - memory
+    - skills

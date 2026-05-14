@@ -1,0 +1,8 @@
+---
+# Ollama Role Handlers
+
+- name: Restart ollama
+  systemd:
+    name: ollama
+    state: restarted
+    daemon_reload: yes

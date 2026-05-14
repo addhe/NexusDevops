@@ -1,0 +1,77 @@
+---
+# GCP Compute Role Defaults
+# =========================
+# Default variables for GCP VM provisioning
+
+# Instance Configuration
+# Naming Convention: ocl-worker-{role}-{numeric-id}-{env}
+# Examples: ocl-worker-devops-001-stg, ocl-worker-backend-003-prd
+gcp_worker_role: "devops"  # Options: devops, backend, frontend, test-engineer, infosec, pm, tpm, mobile-engineer
+gcp_worker_id: "001"       # Numeric ID: 001-999
+gcp_instance_name_prefix: "{{ org_short }}-worker-{{ gcp_worker_role }}-{{ gcp_worker_id }}-{{ env_short }}"
+
+# Machine Configuration
+gcp_machine_type: "e2-medium"
+gcp_machine_type_spot: "e2-medium"  # Spot instance type
+
+# Spot Instance Configuration
+gcp_spot_instance: true
+gcp_spot_price: "0.02"  # Max price per hour for spot
+gcp_spot_interruption: "TERMINATE"  # TERMINATE or STOP
+
+# Image
+gcp_image_family: "ubuntu-2204-lts"
+gcp_image_project: "ubuntu-os-cloud"
+
+# Disk
+gcp_disk_size_gb: 20
+gcp_disk_type: "pd-ssd"
+gcp_disk_auto_delete: true
+
+# Network
+gcp_network: "default"
+gcp_subnetwork: "default"
+gcp_external_ip: true
+gcp_internal_ip: false
+
+# Firewall
+gcp_firewall_allow_ssh: true
+gcp_firewall_allow_http: true
+gcp_firewall_allow_https: true
+gcp_firewall_allow_gateway: true
+
+# Service Account (uses default compute SA or override in group_vars)
+gcp_service_account_email: "361046956504-compute@developer.gserviceaccount.com"
+gcp_service_account_scopes:
+  - "https://www.googleapis.com/auth/compute"
+  - "https://www.googleapis.com/auth/devstorage.read_only"
+  - "https://www.googleapis.com/auth/logging.write"
+  - "https://www.googleapis.com/auth/monitoring.write"
+
+# Preemptible / Spot
+gcp_preemptible: false  # Legacy, use gcp_spot_instance instead
+
+# Tags and Labels
+gcp_instance_labels:
+  environment: "{{ deploy_env }}"
+  managed_by: "ansible"
+  project: "{{ org_name }}"
+  role: "{{ gcp_worker_role }}"
+  worker_id: "{{ gcp_worker_id }}"
+  cost_center: "{{ deploy_env }}-infrastructure"
+
+gcp_instance_tags:
+  - "{{ deploy_env }}"
+  - "{{ application | default('openclaw') }}"
+  - "ansible-managed"
+
+# Startup Script
+gcp_startup_script: ""
+
+# Metadata
+gcp_metadata:
+  ssh-keys: "admin:ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDG7Nn86wgQscOColhmdAw9Bhl97snGyYvZdRwnLbiwq shannon@test-spot-vm"
+
+# SSH Access (for inventory)
+base_user_name: "admin"
+base_ssh_port: 22

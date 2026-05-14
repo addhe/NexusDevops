@@ -1,0 +1,17 @@
+---
+# Deploy JawTek AI Agent
+# Usage:
+#   ansible-playbook playbooks/deploy/jawtek-ai-agent.yml -i inventory/production/hosts.yml --ask-vault-pass
+
+- name: Deploy JawTek AI Agent
+  hosts: jawtek_ai_agent
+  become: true
+  roles:
+    - role: base
+      tags: [base]
+    - role: openclaw-prereq
+      tags: [prereq]
+    - role: openclaw-install
+      tags: [install]
+    - role: jawtek-ai-agent-config
+      tags: [config]

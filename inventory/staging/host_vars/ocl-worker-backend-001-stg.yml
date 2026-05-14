@@ -1,0 +1,18 @@
+---
+# Host-specific variables for ocl-worker-backend-001-stg
+# =====================================
+# NOTE: Bot tokens are in vault.yml, NOT here
+
+ansible_host: 35.219.3.37
+instance_name: ocl-worker-backend-001-stg
+instance_zone: asia-southeast2-a
+
+# Role: Backend Worker
+worker_role: backend
+
+# Telegram Bot Token (from vault)
+telegram_bot_token: "{{ vault_telegram_bot_tokens.backend['001'] }}"
+
+# Persona - Senior Backend Engineer
+persona_name: "Senior Backend Engineer"
+persona_focus: "API development, database optimization, microservices architecture, performance tuning"

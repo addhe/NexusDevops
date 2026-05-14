@@ -1,0 +1,44 @@
+---
+# JawTek AI Agent - Production Group Variables
+
+# Bot Identity
+bot_name: "JawTek"
+bot_full_name: "JawTek AI Agent - Digital Transformation Products"
+bot_emoji: "⚡"
+bot_persona: "Cloud Run Specialist"
+
+# Application
+application: "jawtek-ai-agent"
+openclaw_user: "openclaw"
+openclaw_group: "openclaw"
+openclaw_workspace: "/home/openclaw/.openclaw/workspace"
+
+# Service Configuration
+openclaw_service_description: "JawTek AI Agent - OpenClaw Gateway"
+
+# Gateway
+gateway_port: 8080
+gateway_bind: "lan"
+gateway_mode: "local"
+
+# Model Configuration
+openclaw_model: "ollama/glm-5.1:cloud"
+openclaw_log_level: "info"
+
+# Cloud Run Service
+cloud_run_service: "jawtekid-digital-transformation-products"
+cloud_run_region: "us-west1"
+
+# Telegram - Owner Only (allowlist)
+telegram_dm_policy: "allowlist"
+telegram_allow_from: ["319535690"]
+telegram_group_policy: "allowlist"
+telegram_group_allow_from: []
+telegram_bot_token: "{{ vault_jawtek_bot_token }}"
+
+# Gateway token
+gateway_token: "{{ vault_jawtek_gateway_token }}"
+
+# GCP
+gcp_project: "awanmasterpiece"
+gcp_zone: "asia-southeast2-b"

@@ -1,0 +1,166 @@
+---
+# JawTek AI Agent Configuration Role
+# Deploys JawTek AI Agent (Cloud Run management bot)
+
+# ──────────────────────────────────────
+# OpenClaw Configuration
+# ──────────────────────────────────────
+
+- name: Create OpenClaw directory structure
+  file:
+    path: "/home/{{ openclaw_user }}/.openclaw/{{ item }}"
+    state: directory
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0700'
+  loop:
+    - ""
+    - "identity"
+    - "agents/main/agent"
+    - "agents/main/sessions"
+    - "workspace/memory"
+
+- name: Deploy OpenClaw config file
+  template:
+    src: openclaw.json.j2
+    dest: "/home/{{ openclaw_user }}/.openclaw/openclaw.json"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0600'
+
+- name: Deploy auth-profiles.json (Ollama provider registration)
+  template:
+    src: auth-profiles.json.j2
+    dest: "/home/{{ openclaw_user }}/.openclaw/agents/main/agent/auth-profiles.json"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0600'
+  when: vault_ollama_api_key | default('') | length > 0
+
+- name: Deploy .env file
+  template:
+    src: env.j2
+    dest: "/home/{{ openclaw_user }}/.openclaw/.env"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0600'
+
+- name: Deploy workspace files
+  copy:
+    src: "{{ item }}"
+    dest: "/home/{{ openclaw_user }}/.openclaw/workspace/{{ item }}"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0644'
+  loop:
+    - AGENTS.md
+    - SOUL.md
+    - USER.md
+    - TOOLS.md
+    - HEARTBEAT.md
+
+- name: Deploy MEMORY.md
+  copy:
+    src: MEMORY.md
+    dest: "/home/{{ openclaw_user }}/.openclaw/workspace/MEMORY.md"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0644'
+    force: no
+
+- name: Deploy IDENTITY.md
+  copy:
+    src: IDENTITY.md
+    dest: "/home/{{ openclaw_user }}/.openclaw/workspace/IDENTITY.md"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0644'
+    force: no
+
+- name: Deploy systemd service
+  template:
+    src: openclaw.service.j2
+    dest: /etc/systemd/system/openclaw.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create compile cache directory
+  file:
+    path: /var/tmp/openclaw-compile-cache
+    state: directory
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0755'
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Enable OpenClaw service
+  systemd:
+    name: openclaw
+    enabled: yes
+
+- name: Run OpenClaw doctor fix (non-interactive)
+  command: openclaw doctor --fix
+  become: yes
+  become_user: "{{ openclaw_user }}"
+  environment:
+    HOME: "/home/{{ openclaw_user }}"
+    OLLAMA_API_KEY: "{{ vault_ollama_api_key | default('ollama-local') }}"
+    OPENCLAW_NO_RESPAWN: "1"
+    CI: "true"
+  changed_when: true
+  ignore_errors: yes
+  timeout: 30
+
+- name: Fix .openclaw ownership (doctor may create files as root)
+  file:
+    path: "/home/{{ openclaw_user }}/.openclaw"
+    state: directory
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    recurse: yes
+
+- name: Start OpenClaw service
+  systemd:
+    name: openclaw
+    state: restarted
+
+- name: Wait for OpenClaw to be ready
+  wait_for:
+    port: "{{ gateway_port }}"
+    host: localhost
+    delay: 10
+    timeout: 90
+  ignore_errors: yes
+  register: gateway_wait
+
+- name: Check OpenClaw status
+  command: systemctl status openclaw
+  register: service_status
+  changed_when: false
+  ignore_errors: yes
+
+- name: Display service status
+  debug:
+    var: service_status.stdout_lines
+
+- name: Display completion message
+  debug:
+    msg: |
+      ================================
+      JawTek AI Agent Deployed!
+      ================================
+      Instance: {{ inventory_hostname }}
+      Environment: {{ deploy_env | default('production') }}
+      Gateway Port: {{ gateway_port }}
+      Bot: {{ bot_name }}
+      Model: {{ openclaw_model }}
+      Cloud Run Service: {{ cloud_run_service }}
+      Cloud Run Region: {{ cloud_run_region }}
+      ================================
+      Test:
+      curl http://localhost:{{ gateway_port }}/status
+      ================================

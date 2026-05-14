@@ -1,0 +1,56 @@
+---
+# =====================================
+# Vault Template - Encrypted Secrets
+# =====================================
+# Copy this file to vault.yml in the appropriate inventory group_vars directory
+# Then encrypt it with: ansible-vault encrypt vault.yml
+# Password file should be in .vault_password or .vault_password_staging
+
+# =====================================
+# Required Vault Variables
+# =====================================
+
+# GCP Configuration
+vault_gcp_project_id: "your-gcp-project-id"
+vault_gcp_service_account_email: "service-account@project.iam.gserviceaccount.com"
+vault_gcp_service_account_key: |
+  {
+    "type": "service_account",
+    "project_id": "...",
+    "private_key_id": "...",
+    "private_key": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n",
+    "client_email": "...",
+    "client_id": "...",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "..."
+  }
+
+# Telegram Bot Token
+vault_telegram_bot_token: "1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
+
+# Telegram Allowed Users (comma-separated Telegram IDs)
+vault_telegram_allowed_users:
+  - "319535690"  # Primary owner
+
+# Gateway Auth Token
+vault_gateway_token: "your-secure-random-token-here"
+
+# OpenAI API Key (optional)
+vault_openai_api_key: "sk-..."
+
+# =====================================
+# Anti-Takeover Security
+# =====================================
+
+# Sensitive password for high-risk operations (gateway commands, config changes)
+# This password is required for sensitive operations even from the owner
+vault_sensitive_password: "CHANGE_ME_TO_SECURE_PASSWORD"  # CHANGE THIS IN PRODUCTION!
+
+# =====================================
+# Ollama Cloud API (optional)
+# =====================================
+
+# Ollama Cloud API Key for :cloud models
+vault_ollama_cloud_api_key: "your-ollama-cloud-api-key"

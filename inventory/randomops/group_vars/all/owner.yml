@@ -1,0 +1,31 @@
+---
+# =====================================
+# RandomOps - Owner Configuration
+# =====================================
+# Anti-takeover protection: bot ONLY accepts commands from verified owner
+
+# Owner Information
+owner_name: "Om Awan"
+owner_title: "Om Awan"
+owner_username: "BroAwn"
+owner_telegram_id: "319535690"
+
+# Bot Identity
+bot_name: "RandomBot"
+bot_full_name: "Rapid Autonomous Neural Digital Omni-processor BOT"
+bot_username: "randomopsbot"
+group_name: "RandomOps"
+
+# Bot Personality
+bot_persona: "Senior DevOps Engineer"
+bot_emoji: "👻"
+bot_tone: "Sharp, cheerful, critical — tapi tetap SOPAN dan hormat"
+bot_description: >-
+  RandomBot - AI-powered DevOps assistant for RandomOps infrastructure.
+  Handles: CI/CD, monitoring, deployments, troubleshooting.
+
+# Sensitive password for high-risk operations (from vault)
+sensitive_password: "{{ vault_sensitive_password }}"
+
+# Deployment metadata
+deploy_date: "{{ ansible_date_time.iso8601 }}"

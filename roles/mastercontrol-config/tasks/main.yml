@@ -1,0 +1,294 @@
+---
+# MasterControl Configuration Role
+# Deploys IrishEcho MasterControl bot
+# Includes infrastructure management tools (gcloud, ansible)
+
+# ──────────────────────────────────────
+# Infrastructure Management Tools
+# ──────────────────────────────────────
+
+- name: Install gcloud CLI dependencies
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - gnupg
+      - curl
+    state: present
+
+- name: Add Google Cloud SDK repository key
+  shell: |
+    curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+  args:
+    creates: /usr/share/keyrings/cloud.google.gpg
+
+- name: Add Google Cloud SDK repository
+  copy:
+    content: "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main\n"
+    dest: /etc/apt/sources.list.d/google-cloud-sdk.list
+    mode: '0644'
+
+- name: Install gcloud CLI
+  apt:
+    name: google-cloud-cli
+    state: present
+    update_cache: yes
+
+- name: Install Ansible and dependencies
+  apt:
+    name:
+      - python3-pip
+      - python3-venv
+    state: present
+
+- name: Install Ansible and GCP dependencies via pip
+  pip:
+    name:
+      - ansible
+      - google-auth
+      - requests
+    state: present
+    executable: pip3
+
+- name: Install Ansible google.cloud collection
+  command: ansible-galaxy collection install google.cloud --force
+  become: yes
+  become_user: "{{ openclaw_user }}"
+  environment:
+    HOME: "/home/{{ openclaw_user }}"
+  changed_when: true
+
+- name: Clone openclaw-config-backup repo
+  git:
+    repo: "https://github.com/addhe/openclaw-config-backup.git"
+    dest: "/home/{{ openclaw_user }}/openclaw-config-backup"
+    version: main
+    force: yes
+  become: yes
+  become_user: "{{ openclaw_user }}"
+
+- name: Fix repo ownership
+  file:
+    path: "/home/{{ openclaw_user }}/openclaw-config-backup"
+    state: directory
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    recurse: yes
+
+- name: Add git safe.directory
+  command: git config --global --add safe.directory /home/{{ openclaw_user }}/openclaw-config-backup
+  become: yes
+  become_user: "{{ openclaw_user }}"
+  changed_when: false
+
+- name: Generate SSH key for VM management
+  openssh_keypair:
+    path: "/home/{{ openclaw_user }}/.ssh/mastercontrol-gcp"
+    type: ed25519
+    comment: "mastercontrol@awanmasterpiece"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0600'
+
+- name: Create .ansible directory
+  file:
+    path: "/home/{{ openclaw_user }}/.ansible"
+    state: directory
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0700'
+
+- name: Setup vault password
+  copy:
+    content: "{{ vault_ansible_vault_password | default(vault_sensitive_password) }}"
+    dest: "/home/{{ openclaw_user }}/.ansible/vault_password"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0600'
+
+# ──────────────────────────────────────
+# OpenClaw Configuration
+# ──────────────────────────────────────
+
+- name: Create OpenClaw directory structure
+  file:
+    path: "/home/{{ openclaw_user }}/.openclaw/{{ item }}"
+    state: directory
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0700'
+  loop:
+    - ""
+    - "identity"
+    - "agents/main/agent"
+    - "agents/main/sessions"
+    - "workspace/memory"
+
+- name: Deploy OpenClaw config file
+  template:
+    src: openclaw.json.j2
+    dest: "/home/{{ openclaw_user }}/.openclaw/openclaw.json"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0600'
+
+- name: Deploy auth-profiles.json (Ollama provider registration)
+  template:
+    src: auth-profiles.json.j2
+    dest: "/home/{{ openclaw_user }}/.openclaw/agents/main/agent/auth-profiles.json"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0600'
+  when: vault_ollama_api_key | default('') | length > 0
+
+- name: Deploy .env file
+  template:
+    src: env.j2
+    dest: "/home/{{ openclaw_user }}/.openclaw/.env"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0600'
+
+- name: Deploy workspace files
+  copy:
+    src: "{{ item }}"
+    dest: "/home/{{ openclaw_user }}/.openclaw/workspace/{{ item }}"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0644'
+  loop:
+    - AGENTS.md
+    - SOUL.md
+    - USER.md
+    - TOOLS.md
+    - HEARTBEAT.md
+
+- name: Deploy MEMORY.md
+  copy:
+    src: MEMORY.md
+    dest: "/home/{{ openclaw_user }}/.openclaw/workspace/MEMORY.md"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0644'
+    force: no
+
+- name: Deploy IDENTITY.md
+  copy:
+    src: IDENTITY.md
+    dest: "/home/{{ openclaw_user }}/.openclaw/workspace/IDENTITY.md"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0644'
+    force: no
+
+- name: Deploy startup script
+  copy:
+    src: mastercontrol-startup.sh
+    dest: /usr/local/bin/mastercontrol-startup.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Deploy identity systemd service
+  copy:
+    src: mastercontrol-identity.service
+    dest: /etc/systemd/system/mastercontrol-identity.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Enable identity service
+  systemd:
+    name: mastercontrol-identity
+    enabled: yes
+    daemon_reload: yes
+
+- name: Deploy systemd service
+  template:
+    src: openclaw.service.j2
+    dest: /etc/systemd/system/openclaw.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create compile cache directory
+  file:
+    path: /var/tmp/openclaw-compile-cache
+    state: directory
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0755'
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Enable OpenClaw service
+  systemd:
+    name: openclaw
+    enabled: yes
+
+- name: Run OpenClaw doctor fix (non-interactive)
+  command: openclaw doctor --fix
+  become: yes
+  become_user: "{{ openclaw_user }}"
+  environment:
+    HOME: "/home/{{ openclaw_user }}"
+    OLLAMA_API_KEY: "{{ vault_ollama_api_key | default('ollama-local') }}"
+    OPENCLAW_NO_RESPAWN: "1"
+    CI: "true"
+  changed_when: true
+  ignore_errors: yes
+  timeout: 30
+
+- name: Fix .openclaw ownership (doctor may create files as root)
+  file:
+    path: "/home/{{ openclaw_user }}/.openclaw"
+    state: directory
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    recurse: yes
+
+- name: Start OpenClaw service
+  systemd:
+    name: openclaw
+    state: restarted
+
+- name: Wait for OpenClaw to be ready
+  wait_for:
+    port: "{{ gateway_port }}"
+    host: localhost
+    delay: 10
+    timeout: 90
+  ignore_errors: yes
+  register: gateway_wait
+
+- name: Check OpenClaw status
+  command: systemctl status openclaw
+  register: service_status
+  changed_when: false
+  ignore_errors: yes
+
+- name: Display service status
+  debug:
+    var: service_status.stdout_lines
+
+- name: Display completion message
+  debug:
+    msg: |
+      ================================
+      IrishEcho MasterControl Deployed!
+      ================================
+      Instance: {{ inventory_hostname }}
+      Environment: {{ deploy_env | default('staging') }}
+      Gateway Port: {{ gateway_port }}
+      Bot Token: {{ telegram_bot_token[:20] }}...
+      Owner: @BroAwn (ID: {{ owner_telegram_id }})
+      ================================
+      Access Policy:
+      • DM ONLY - No group access
+      • OWNER ONLY - Single user
+      ================================
+      Test:
+      curl http://localhost:{{ gateway_port }}/status
+      ================================

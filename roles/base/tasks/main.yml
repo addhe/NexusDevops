@@ -1,0 +1,180 @@
+---
+# Base Role Tasks
+# ==================
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Upgrade all packages
+  apt:
+    upgrade: dist
+    autoremove: yes
+
+- name: Install base packages
+  apt:
+    name: "{{ base_packages }}"
+    state: present
+
+- name: Ensure base packages are up to date
+  apt:
+    name: "{{ base_packages }}"
+    state: latest
+    update_cache: yes
+
+- name: Set timezone
+  timezone:
+    name: "{{ system_timezone }}"
+
+- name: Set locale
+  locale_gen:
+    name: "{{ base_locale | default('en_US.UTF-8') }}"
+    state: present
+
+- name: Create admin user
+  user:
+    name: "{{ base_user_name }}"
+    shell: "{{ base_user_shell }}"
+    groups: sudo
+    append: yes
+    create_home: yes
+
+- name: Allow admin user to sudo without password
+  lineinfile:
+    path: "/etc/sudoers.d/{{ base_user_name }}"
+    line: "{{ base_user_name }} ALL=(ALL) NOPASSWD: ALL"
+    create: yes
+    validate: "visudo -cf %s"
+    mode: "0440"
+
+- name: Configure SSH - Disable root login
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^PermitRootLogin"
+    line: "PermitRootLogin {{ base_ssh_permit_root_login }}"
+    state: present
+  notify: Restart sshd
+
+- name: Configure SSH - Disable password authentication
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^PasswordAuthentication"
+    line: "PasswordAuthentication {{ base_ssh_password_auth }}"
+    state: present
+  notify: Restart sshd
+
+- name: Configure SSH - Change port if needed
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^Port"
+    line: "Port {{ base_ssh_port }}"
+    state: present
+  notify: Restart sshd
+
+- name: Install fail2ban
+  apt:
+    name: fail2ban
+    state: present
+  when: base_fail2ban_enabled
+
+- name: Configure fail2ban
+  template:
+    src: jail.local.j2
+    dest: /etc/fail2ban/jail.local
+    owner: root
+    group: root
+    mode: "0644"
+  when: base_fail2ban_enabled
+  notify: Restart fail2ban
+
+- name: Enable fail2ban
+  service:
+    name: fail2ban
+    enabled: yes
+    state: started
+  when: base_fail2ban_enabled
+
+- name: Configure unattended-upgrades
+  debconf:
+    name: unattended-upgrades
+    question: unattended-upgrades/enable_auto_updates
+    vtype: boolean
+    value: "true"
+  when: base_unattended_upgrades
+
+- name: Install unattended-upgrades
+  apt:
+    name: unattended-upgrades
+    state: present
+  when: base_unattended_upgrades
+
+- name: Enable unattended-upgrades
+  copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+    owner: root
+    group: root
+    mode: "0644"
+  when: base_unattended_upgrades
+
+- name: Configure log rotation
+  template:
+    src: logrotate.conf.j2
+    dest: /etc/logrotate.d/base
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Configure sysctl for security
+  sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: yes
+  loop:
+    - { key: "net.ipv4.conf.all.rp_filter", value: "1" }
+    - { key: "net.ipv4.conf.default.rp_filter", value: "1" }
+    - { key: "net.ipv4.icmp_echo_ignore_broadcasts", value: "1" }
+    - { key: "net.ipv4.conf.all.accept_redirects", value: "0" }
+    - { key: "net.ipv4.conf.default.accept_redirects", value: "0" }
+    - { key: "net.ipv4.conf.all.send_redirects", value: "0" }
+    - { key: "net.ipv4.conf.default.send_redirects", value: "0" }
+    - { key: "net.ipv4.tcp_syncookies", value: "1" }
+
+- name: Install and configure UFW
+  block:
+    - name: Install UFW
+      apt:
+        name: ufw
+        state: present
+
+    - name: Reset UFW
+      ufw:
+        state: reset
+
+    - name: Allow SSH
+      ufw:
+        rule: allow
+        port: "{{ base_ssh_port }}"
+        proto: tcp
+
+    - name: Allow additional ports
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop: "{{ firewall_allowed_tcp_ports }}"
+      when: firewall_allowed_tcp_ports is defined
+
+    - name: Enable UFW
+      ufw:
+        state: enabled
+        policy: deny
+        direction: incoming
+
+- name: Display completion message
+  debug:
+    msg: "Base role completed successfully"

@@ -1,0 +1,18 @@
+---
+# Host-specific variables for ocl-worker-devops-001-stg
+# =====================================
+# NOTE: Bot tokens are in vault.yml, NOT here
+
+ansible_host: 35.219.42.250
+instance_name: ocl-worker-devops-001-stg
+instance_zone: asia-southeast2-a
+
+# Role: DevOps Worker
+worker_role: devops
+
+# Telegram Bot Token (from vault)
+telegram_bot_token: "{{ vault_telegram_bot_tokens.devops['001'] }}"
+
+# Persona - Senior DevOps Engineer
+persona_name: "Senior DevOps Engineer"
+persona_focus: "CI/CD pipelines, infrastructure automation, monitoring, cloud platforms, container orchestration"

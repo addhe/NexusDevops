@@ -1,0 +1,184 @@
+---
+# OpenClaw Configuration Role
+# Deploys config and persona-based identity files
+
+- name: Deploy OpenClaw config file
+  template:
+    src: openclaw.json.j2
+    dest: "/home/{{ openclaw_user }}/.openclaw/openclaw.json"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0600'
+
+- name: Deploy .env file
+  template:
+    src: env.j2
+    dest: "/home/{{ openclaw_user }}/.openclaw/.env"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0600'
+
+- name: Deploy SOUL.md (worker personality)
+  template:
+    src: soul.md.j2
+    dest: "/home/{{ openclaw_user }}/.openclaw/workspace/SOUL.md"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0644'
+
+- name: Deploy USER.md (worker context)
+  template:
+    src: user.md.j2
+    dest: "/home/{{ openclaw_user }}/.openclaw/workspace/USER.md"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0644'
+
+- name: Deploy IDENTITY.md (role-specific persona)
+  template:
+    src: "personas/{{ worker_personas[gcp_worker_role].file_prefix }}-identity.md.j2"
+    dest: "/home/{{ openclaw_user }}/.openclaw/workspace/IDENTITY.md"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0644'
+
+- name: Create agent auth directory
+  file:
+    path: "/home/{{ openclaw_user }}/.openclaw/agents/main/agent"
+    state: directory
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0755'
+
+- name: Create identity directory
+  file:
+    path: "/home/{{ openclaw_user }}/.openclaw/identity"
+    state: directory
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0700'
+
+- name: Deploy auth-profiles.json (Ollama API key)
+  template:
+    src: auth-profiles.json.j2
+    dest: "/home/{{ openclaw_user }}/.openclaw/agents/main/agent/auth-profiles.json"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0600'
+  when: ollama_cloud_enabled | default(false) | bool and (ollama_cloud_api_key | default('')) | length > 0
+
+- name: Deploy static workspace files
+  copy:
+    src: "{{ item }}"
+    dest: "/home/{{ openclaw_user }}/.openclaw/workspace/{{ item }}"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0644'
+  loop:
+    - AGENTS.md
+    - TOOLS.md
+    - HEARTBEAT.md
+
+- name: Deploy MEMORY.md with owner configuration
+  template:
+    src: MEMORY.md.j2
+    dest: "/home/{{ openclaw_user }}/.openclaw/workspace/MEMORY.md"
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0644'
+    force: no
+
+- name: Create OpenClaw sessions directory
+  file:
+    path: "/home/{{ openclaw_user }}/.openclaw/sessions"
+    state: directory
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0755'
+
+- name: Create OpenClaw compile cache
+  file:
+    path: "/home/{{ openclaw_user }}/.openclaw/.compile-cache"
+    state: directory
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0755'
+
+- name: Deploy worker identity startup script
+  copy:
+    src: startup-script.sh
+    dest: /usr/local/bin/openclaw-worker-startup.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Deploy worker identity systemd service
+  copy:
+    src: worker-identity.service
+    dest: /etc/systemd/system/openclaw-worker-identity.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Enable worker identity service
+  systemd:
+    name: openclaw-worker-identity
+    enabled: yes
+    daemon_reload: yes
+
+- name: Deploy systemd service
+  template:
+    src: openclaw.service.j2
+    dest: /etc/systemd/system/openclaw.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Run OpenClaw doctor fix (non-interactive)
+  command: openclaw doctor --fix
+  become: true
+  become_user: "{{ openclaw_user }}"
+  environment:
+    HOME: "/home/{{ openclaw_user }}"
+    PATH: "/usr/bin:/usr/local/bin"
+  changed_when: true
+  ignore_errors: yes
+
+- name: Fix .openclaw ownership (doctor may create files as root)
+  file:
+    path: "/home/{{ openclaw_user }}/.openclaw"
+    state: directory
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    recurse: yes
+
+- name: Enable OpenClaw service
+  systemd:
+    name: openclaw
+    enabled: yes
+
+- name: Restart OpenClaw service
+  systemd:
+    name: openclaw
+    state: restarted
+
+- name: Wait for OpenClaw to be ready
+  wait_for:
+    port: "{{ gateway_port | default(8080) }}"
+    host: localhost
+    delay: 5
+    timeout: 60
+
+- name: Check OpenClaw status
+  command: systemctl status openclaw
+  register: service_status
+  changed_when: false
+  ignore_errors: yes
+
+- name: Display service status
+  debug:
+    var: service_status.stdout_lines

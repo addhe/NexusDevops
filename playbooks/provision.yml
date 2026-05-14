@@ -1,0 +1,7 @@
+---
+- name: Provision VM for OpenClaw
+  hosts: openclaw
+  become: yes
+
+  roles:
+    - openclaw-prereq

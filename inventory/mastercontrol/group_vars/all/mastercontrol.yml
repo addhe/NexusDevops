@@ -1,0 +1,69 @@
+---
+# =====================================
+# MasterControl Bot Configuration
+# =====================================
+# RESTRICTED CONTROL PLANE
+# - DM ONLY (no group access)
+# - Single owner: BroAwn (319535690)
+# - Used for infrastructure management
+
+# Bot Identity
+bot_name: "IrishEcho"
+bot_full_name: "IrishEcho MasterControl"
+bot_emoji: "🎛️"
+bot_tone: "Precise, efficient, authoritative — control plane persona"
+
+# Owner - SINGLE OWNER ONLY
+owner_name: "Om Awan"
+owner_title: "Om Awan"
+owner_username: "BroAwn"
+owner_telegram_id: "319535690"
+
+# Bot Token (create via @BotFather)
+# TODO: Update this with actual token
+telegram_bot_token: "{{ vault_mastercontrol_bot_token }}"
+
+# Access Control - CRITICAL
+# This bot is DM ONLY - no group access allowed
+telegram_config:
+  enabled: true
+  dm_policy: "strict"  # Only DM allowed
+  groups:
+    enabled: false     # NO GROUP ACCESS
+  allow_from:
+    - "319535690"      # BroAwn ONLY - numeric ID for security
+  group_policy: "deny" # Explicitly deny all groups
+
+# Security Settings
+security:
+  anti_takeover: true
+  strict_owner_verification: true
+  password_required_for_sensitive: true
+  log_all_commands: true
+
+# Model - Use reliable model for control plane
+openclaw_model: "ollama/glm-5:cloud"
+
+# Gateway Settings
+gateway:
+  port: 8080
+  mode: "local"
+  bind: "127.0.0.1"  # Localhost only for security
+  auth:
+    mode: "token"
+    token: "{{ vault_mastercontrol_gateway_token }}"
+
+# Logging - Verbose for control plane
+openclaw_log_level: "debug"
+
+# Workspace
+openclaw_user: "mastercontrol"
+openclaw_group: "mastercontrol"
+openclaw_workspace: "/home/mastercontrol/.openclaw/workspace"
+
+# Persona
+bot_persona: "Infrastructure Control Plane"
+bot_description: |
+  IrishEcho MasterControl - Control plane for RandomOps infrastructure.
+  RESTRICTED ACCESS: DM only, owner-managed.
+  Used for: VM management, bot orchestration, infrastructure monitoring.

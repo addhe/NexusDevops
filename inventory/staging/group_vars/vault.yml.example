@@ -1,0 +1,41 @@
+---
+# =====================================
+# Ansible Vault Secrets - Staging (EXAMPLE)
+# =====================================
+# Copy this file to vault.yml and fill in your secrets
+# NEVER commit vault.yml with real secrets!
+
+# GCP Credentials (using OAuth/Application Default Credentials)
+vault_gcp_project_id: "your-project-id"
+vault_gcp_auth_kind: "application"
+
+# Telegram Bot Tokens (per worker)
+# Each worker needs a unique bot token
+# Create bots via @BotFather on Telegram
+vault_telegram_bot_tokens:
+  devops:
+    "001": "DEVOPS_BOT_TOKEN_FROM_BOTFATHER"
+    "002": "DEVOPS_002_BOT_TOKEN"
+  backend:
+    "001": "BACKEND_BOT_TOKEN_FROM_BOTFATHER"
+    "002": "BACKEND_002_BOT_TOKEN"
+  frontend:
+    "001": "FRONTEND_BOT_TOKEN_FROM_BOTFATHER"
+  test-engineer:
+    "001": "TEST_ENGINEER_BOT_TOKEN_FROM_BOTFATHER"
+  # Add more roles as needed
+
+# Telegram Allowed Users (whitelist)
+# Add Telegram user IDs that are allowed to interact with bots
+vault_telegram_allowed_users:
+  - 123456789  # Your Telegram user ID (numeric)
+
+# Gateway
+vault_gateway_token: ""  # Optional: gateway auth token
+
+# API Keys
+vault_openai_api_key: ""  # Optional: OpenAI API key
+
+# Ollama Cloud API Key
+# Get from https://ollama.com/settings/keys
+vault_ollama_cloud_api_key: "your-ollama-cloud-api-key"

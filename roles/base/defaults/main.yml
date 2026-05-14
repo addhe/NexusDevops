@@ -1,0 +1,33 @@
+---
+# Base Role Defaults
+# ==================
+# Default variables for base role
+
+# User Configuration
+base_user_name: "admin"
+base_user_shell: "/bin/bash"
+base_user_sudo: true
+
+# SSH Configuration
+base_ssh_port: 22
+base_ssh_permit_root_login: "no"
+base_ssh_password_auth: "no"
+base_ssh_pubkey_auth: "yes"
+
+# Security
+base_fail2ban_enabled: true
+base_fail2ban_bantime: 3600
+base_fail2ban_maxretry: 5
+base_unattended_upgrades: true
+
+# System
+base_timezone: "UTC"
+base_locale: "en_US.UTF-8"
+
+# Kernel
+base_kernel_version: "latest"
+base_kernel_update: true
+
+# Logging
+base_log_retention: 30
+base_syslog_enabled: true

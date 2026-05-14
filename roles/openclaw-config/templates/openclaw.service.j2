@@ -1,0 +1,30 @@
+[Unit]
+Description=OpenClaw Gateway
+Documentation=https://docs.openclaw.ai
+After=network.target
+
+[Service]
+Type=simple
+User={{ openclaw_user }}
+Group={{ openclaw_group }}
+WorkingDirectory=/home/{{ openclaw_user }}/.openclaw
+Environment="PATH=/usr/bin:/usr/local/bin"
+EnvironmentFile=/home/{{ openclaw_user }}/.openclaw/.env
+ExecStart=/usr/bin/openclaw gateway
+Restart=always
+RestartSec=10
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Limits
+LimitNOFILE=65535
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=openclaw
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,29 @@
+---
+# =====================================
+# GCP Configuration - Staging
+# =====================================
+
+# GCP Project
+gcp_project_id: "{{ vault_gcp_project_id }}"
+gcp_region: "asia-southeast2"  # Jakarta
+gcp_zone: "asia-southeast2-a"
+
+# GCP Authentication (using Service Account Key)
+gcp_auth_kind: "serviceaccount"
+gcp_service_account_file: "/home/addheputra/openclaw-config-backup/ansible/inventory/staging/gcp-sa-key.json"
+
+# Service Account for VM instances (uses default compute SA)
+gcp_service_account_email: "361046956504-compute@developer.gserviceaccount.com"
+
+# Network
+gcp_network: "openclaw-staging-network"
+gcp_subnetwork: "openclaw-staging-subnet"
+
+# Labels (for resource management)
+# Worker roles: devops, backend, frontend, test-engineer, infosec, pm, tpm, mobile-engineer
+gcp_common_labels:
+  env: "stg"
+  managed_by: "openclaw"
+  owner: "{{ owner }}"
+  project: "{{ org_name }}"
+  cost_center: "staging-infrastructure"

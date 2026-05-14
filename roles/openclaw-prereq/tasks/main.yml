@@ -1,0 +1,106 @@
+---
+# OpenClaw Prerequisites Role
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install base packages
+  apt:
+    name:
+      - curl
+      - wget
+      - git
+      - gnupg2
+      - ca-certificates
+      - lsb-release
+      - software-properties-common
+      - build-essential
+      - ufw
+    state: present
+
+- name: Add Node.js repository (NodeSource)
+  shell: |
+    curl -fsSL https://deb.nodesource.com/setup_{{ nodejs_version }}.x | bash -
+  args:
+    creates: /etc/apt/sources.list.d/nodesource.list
+
+- name: Install Node.js
+  apt:
+    name: nodejs
+    state: present
+
+- name: Verify Node.js installation
+  command: node --version
+  register: node_version
+  changed_when: false
+
+- name: Verify npm installation
+  command: npm --version
+  register: npm_version
+  changed_when: false
+
+- name: Create openclaw group
+  group:
+    name: "{{ openclaw_group }}"
+    state: present
+
+- name: Create openclaw user
+  user:
+    name: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    shell: /bin/bash
+    home: "/home/{{ openclaw_user }}"
+    create_home: yes
+    system: yes
+
+- name: Create OpenClaw directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ openclaw_user }}"
+    group: "{{ openclaw_group }}"
+    mode: '0755'
+  loop:
+    - "/home/{{ openclaw_user }}/.openclaw"
+    - "/home/{{ openclaw_user }}/.openclaw/workspace"
+    - "/home/{{ openclaw_user }}/.openclaw/workspace/memory"
+    - "/home/{{ openclaw_user }}/.openclaw/workspace/skills"
+
+- name: Configure UFW - Allow SSH
+  ufw:
+    rule: allow
+    name: OpenSSH
+
+- name: Configure UFW - Allow Gateway port
+  ufw:
+    rule: allow
+    port: "{{ gateway_port }}"
+    proto: tcp
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+    policy: deny
+    direction: incoming
+
+- name: Set timezone
+  timezone:
+    name: "{{ system_timezone }}"
+
+- name: Increase file descriptor limits
+  pam_limits:
+    domain: "{{ openclaw_user }}"
+    limit_type: "{{ item.type }}"
+    limit_item: nofile
+    value: '65535'
+  loop:
+    - { type: 'soft' }
+    - { type: 'hard' }
+
+- name: Display versions
+  debug:
+    msg:
+      - "Node.js version: {{ node_version.stdout }}"
+      - "npm version: {{ npm_version.stdout }}"

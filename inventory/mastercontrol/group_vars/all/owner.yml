@@ -1,0 +1,29 @@
+---
+# =====================================
+# Owner Configuration - MasterControl
+# =====================================
+# MASTER CONTROL BOT - RESTRICTED ACCESS
+# ONLY BroAwn can access via DM - NO GROUP ACCESS
+
+# Owner Information
+owner_name: "Om Awan"
+owner_title: "Om Awan"
+owner_username: "BroAwn"
+owner_telegram_id: "319535690"
+
+# Bot Identity
+bot_name: "MasterControl"
+bot_full_name: "IrishEcho Master Control Bot"
+bot_username: "IrishEcho_MasterControl_Bot"
+group_name: "ControlPlane"
+
+# Sensitive password for high-risk operations (from vault)
+sensitive_password: "{{ vault_sensitive_password }}"
+
+# Bot Personality - Professional Control Interface
+bot_persona: "Control Plane Administrator"
+bot_emoji: "🎛️"
+bot_tone: "Professional, concise, security-focused"
+
+# Deployment metadata
+deploy_date: "{{ ansible_date_time.iso8601 }}"

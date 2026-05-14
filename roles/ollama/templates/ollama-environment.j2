@@ -1,0 +1,8 @@
+# Ollama Environment Configuration
+# Managed by Ansible - Do not edit manually
+
+# Ollama Cloud API Key
+OLLAMA_API_KEY={{ ollama_cloud_api_key }}
+
+# Ollama Host (for cloud mode)
+OLLAMA_HOST={{ ollama_cloud_host | default('https://ollama.com') }}

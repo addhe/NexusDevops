@@ -1,0 +1,30 @@
+# SSH Configuration Template
+# ==========================
+
+# Port
+Port {{ base_ssh_port }}
+
+# Authentication
+PermitRootLogin {{ base_ssh_permit_root_login }}
+PasswordAuthentication {{ base_ssh_password_auth }}
+PubkeyAuthentication {{ base_ssh_pubkey_auth | default('yes') }}
+
+# Security
+PermitEmptyPasswords no
+ChallengeResponseAuthentication no
+UsePAM yes
+
+# Logging
+SyslogFacility AUTH
+LogLevel INFO
+
+# Session
+LoginGraceTime 60
+MaxAuthTries 3
+MaxSessions 10
+
+# X11 Forwarding
+X11Forwarding no
+
+# Subsystems
+Subsystem sftp /usr/lib/openssh/sftp-server

@@ -1,0 +1,129 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.3.2",
+    "lastTouchedAt": "{{ ansible_date_time.iso8601 }}"
+  },
+  "logging": {
+    "level": "{{ openclaw_log_level | default('info') }}",
+    "consoleLevel": "{{ openclaw_log_level | default('info') }}"
+  },
+  "auth": {
+    "profiles": {
+      "ollama:manual": {
+        "provider": "ollama",
+        "mode": "token"
+      }
+    }
+  },
+  "acp": {
+    "enabled": true,
+    "dispatch": {
+      "enabled": true
+    }
+  },
+  "models": {
+    "providers": {
+      "ollama": {
+        "baseUrl": "{{ ollama_cloud_host | default('https://ollama.com') }}",
+        "api": "ollama",
+        "models": {{ ollama_models | to_nice_json }}
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "{{ openclaw_model }}",
+        "fallbacks": {{ openclaw_model_fallbacks | default('[]') | to_json }}
+      },
+      "models": {{ openclaw_model_config | default('{}') | to_nice_json }},
+      "workspace": "{{ openclaw_workspace }}",
+      "compaction": {
+        "mode": "safeguard",
+        "memoryFlush": {
+          "enabled": true
+        }
+      },
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8
+      },
+      "memorySearch": {
+        "enabled": true,
+        "store": {
+          "path": "memory/main.sqlite"
+        }
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "name": "main",
+        "workspace": "{{ openclaw_workspace }}"
+      }
+    ]
+  },
+  "tools": {
+    "web": {
+      "search": {
+        "enabled": false
+      },
+      "fetch": {
+        "enabled": true
+      }
+    },
+    "message": {
+      "allowCrossContextSend": true,
+      "crossContext": {
+        "allowWithinProvider": true,
+        "allowAcrossProviders": true
+      }
+    },
+    "agentToAgent": {
+      "enabled": true
+    }
+  },
+  "commands": {
+    "native": false,
+    "nativeSkills": false,
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "{{ telegram_dm_policy | default('allowlist') }}",
+      "botToken": "{{ telegram_bot_token }}",
+      "groups": {{ telegram_groups | default('{}') }},
+      "allowFrom": {{ telegram_allow_from | default('["319535690"]') }},
+      "groupAllowFrom": {{ telegram_group_allow_from | default('[]') }},
+      "groupPolicy": "{{ telegram_group_policy | default('allowlist') }}",
+      "streaming": "partial"
+    }
+  },
+  "gateway": {
+    "port": {{ gateway_port }},
+    "mode": "{{ gateway_mode | default('local') }}",
+    "bind": "{{ gateway_bind | default('lan') }}",
+    "controlUi": {
+      "allowedOrigins": [
+        "http://localhost:{{ gateway_port }}",
+        "http://127.0.0.1:{{ gateway_port }}"
+      ]
+    },
+    "auth": {
+      "mode": "token",
+      "token": "{{ gateway_token }}"
+    }
+  },
+  "plugins": {
+    "entries": {
+      "acpx": {
+        "enabled": true
+      }
+    }
+  },
+  "session": {
+    "dmScope": "main"
+  }
+}

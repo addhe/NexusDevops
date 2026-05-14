@@ -1,0 +1,54 @@
+---
+# =====================================
+# OpenClaw Configuration - MasterControl
+# =====================================
+# Control Plane Bot - RESTRICTED DM-ONLY ACCESS
+
+# Application
+openclaw_version: "latest"
+openclaw_user: "mastercontrol"
+openclaw_group: "mastercontrol"
+openclaw_workspace: "/home/mastercontrol/.openclaw/workspace"
+
+# Service Configuration
+openclaw_service_name: "mastercontrol"
+openclaw_service_description: "IrishEcho Master Control Bot"
+openclaw_service_after: "network.target"
+
+# Gateway - Higher port to avoid conflict with workers
+gateway_port: 8180
+gateway_bind: "0.0.0.0"
+gateway_mode: "local"
+
+# Telegram (from vault)
+telegram_bot_token: "{{ vault_mastercontrol_bot_token }}"
+# CRITICAL: DM-ONLY - Empty allowlist means DM policy controls access
+telegram_allowed_users: ["319535690"]  # BroAwn numeric ID for security
+
+# Gateway Auth (from vault)
+gateway_token: "{{ vault_mastercontrol_gateway_token }}"
+
+# Model - Use most capable model for control plane
+openclaw_model: "ollama/glm-5:cloud"
+
+# Logging - More verbose for control plane
+openclaw_log_level: "debug"
+
+# CRITICAL SECURITY SETTINGS
+# NO GROUP ACCESS - DM only
+telegram_groups_enabled: false
+telegram_dm_policy: "allowlist"
+telegram_dm_allowlist: ["319535690"]  # BroAwn only
+
+# Session settings for control plane
+session_dm_scope: "per-channel-peer"
+
+# Higher limits for control plane operations
+max_concurrent: 8
+subagents_max_concurrent: 16
+
+# Memory settings - Larger for control plane
+compaction_mode: "safeguard"
+reserve_tokens_floor: 20000
+memory_flush_enabled: true
+memory_flush_threshold: 15000

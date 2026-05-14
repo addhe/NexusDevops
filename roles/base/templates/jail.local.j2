@@ -1,0 +1,10 @@
+[DEFAULT]
+bantime = {{ base_fail2ban_bantime }}
+maxretry = {{ base_fail2ban_maxretry }}
+
+[sshd]
+enabled = true
+port = {{ base_ssh_port }}
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = {{ base_fail2ban_maxretry }}

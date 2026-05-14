@@ -1,0 +1,75 @@
+---
+# =====================================
+# JawTek AI Agent Config - Default Variables
+# =====================================
+
+# Bot Identity
+bot_name: "JawTek"
+bot_full_name: "JawTek AI Agent - Digital Transformation Products"
+bot_emoji: "⚡"
+bot_tone: "Professional, knowledgeable, solution-oriented"
+bot_persona: "Cloud Run Specialist"
+
+# Application
+application: "jawtek-ai-agent"
+openclaw_user: "openclaw"
+openclaw_group: "openclaw"
+openclaw_workspace: "/home/openclaw/.openclaw/workspace"
+
+# Service Configuration
+openclaw_service_name: "openclaw"
+openclaw_service_description: "JawTek AI Agent - OpenClaw Gateway"
+
+# Gateway
+gateway_port: 8080
+gateway_bind: "lan"
+gateway_mode: "local"
+
+# Model Configuration
+openclaw_model: "ollama/glm-5.1:cloud"
+openclaw_model_fallbacks: []
+openclaw_model_config: {}
+openclaw_log_level: "info"
+
+# Ollama Cloud - Default Models
+ollama_cloud_enabled: true
+ollama_cloud_host: "https://ollama.com"
+ollama_models:
+  - id: "glm-5"
+    name: "GLM-5"
+    api: "ollama"
+    reasoning: false
+    input:
+      - "text"
+    cost:
+      input: 0
+      output: 0
+      cacheRead: 0
+      cacheWrite: 0
+    contextWindow: 131072
+    maxTokens: 131072
+
+# OpenRouter - Default Models (empty by default)
+openrouter_models: []
+
+# System
+system_timezone: "Asia/Jakarta"
+nodejs_version: "22"
+
+# GCP
+gcp_project: "awanmasterpiece"
+gcp_zone: "asia-southeast2-b"
+
+# Cloud Run - JawTek Service
+cloud_run_service: "jawtekid-digital-transformation-products"
+cloud_run_region: "us-west1"
+
+# Telegram - Owner Only
+telegram_dm_policy: "allowlist"
+telegram_allow_from: ["319535690"]
+telegram_group_policy: "allowlist"
+telegram_group_allow_from: []
+
+# Auth Profiles (secrets from vault)
+ollama_cloud_token: "{{ vault_ollama_cloud_token | default('') }}"
+openrouter_token: "{{ vault_openrouter_token | default('') }}"

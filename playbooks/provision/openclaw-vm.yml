@@ -1,0 +1,99 @@
+---
+# Playbook: Provision OpenClaw Worker VM
+# =======================================
+# This playbook provisions a GCP spot instance for OpenClaw workers
+#
+# Naming Convention: ocl-worker-{role}-{numeric-id}-{env}
+# Examples: ocl-worker-devops-001-stg, ocl-worker-backend-003-prd
+#
+# Worker Persona: Each role has identity/personality
+# - devops → Senior DevOps Engineer
+# - backend → Senior Backend Engineer
+# - frontend → Senior Frontend Engineer
+# - etc.
+#
+# Usage:
+#   ansible-playbook playbooks/provision/openclaw-vm.yml -e "deploy_env=staging gcp_worker_role=devops gcp_worker_id=001"
+
+- name: Provision OpenClaw Worker VM
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+  vars:
+    deploy_env: staging
+    base_dir: "{{ playbook_dir | dirname | dirname }}"
+
+  pre_tasks:
+    - name: Include all vars
+      include_vars:
+        file: "{{ base_dir }}/inventory/{{ deploy_env }}/group_vars/all.yml"
+
+    - name: Include vault vars
+      include_vars:
+        file: "{{ base_dir }}/inventory/{{ deploy_env }}/group_vars/vault.yml"
+
+    - name: Include gcp vars
+      include_vars:
+        file: "{{ base_dir }}/inventory/{{ deploy_env }}/group_vars/gcp.yml"
+
+    - name: Include openclaw vars
+      include_vars:
+        file: "{{ base_dir }}/inventory/{{ deploy_env }}/group_vars/openclaw.yml"
+
+    - name: Display environment
+      debug:
+        msg: "Provisioning for environment: {{ deploy_env }}, project: {{ gcp_project_id }}"
+
+    - name: Validate worker role
+      assert:
+        that:
+          - gcp_worker_role in ['devops', 'backend', 'frontend', 'test-engineer', 'infosec', 'pm', 'tpm', 'mobile-engineer']
+        fail_msg: "Invalid worker role: {{ gcp_worker_role }}. Must be one of: devops, backend, frontend, test-engineer, infosec, pm, tpm, mobile-engineer"
+        success_msg: "Worker role validated: {{ gcp_worker_role }}"
+
+    - name: Validate worker ID
+      assert:
+        that:
+          - gcp_worker_id is match('^[0-9]{3}$')
+        fail_msg: "Invalid worker ID: {{ gcp_worker_id }}. Must be 3-digit number (001-999)"
+        success_msg: "Worker ID validated: {{ gcp_worker_id }}"
+
+    - name: Set worker name fact
+      set_fact:
+        worker_name: "ocl-worker-{{ gcp_worker_role }}-{{ gcp_worker_id }}-{{ 'stg' if deploy_env == 'staging' else 'prd' }}"
+
+    - name: Display worker info
+      debug:
+        msg: |
+          ================================
+          Provisioning OpenClaw Worker
+          ================================
+          Worker Name: {{ worker_name }}
+          Role: {{ gcp_worker_role }}
+          ID: {{ gcp_worker_id }}
+          Environment: {{ deploy_env }}
+          ================================
+
+  roles:
+    - role: gcp-compute
+
+  post_tasks:
+    - name: Display provisioned instances
+      debug:
+        msg: |
+          ================================
+          Provisioning Complete!
+          ================================
+          Instance Name: {{ instance_name }}
+          External IP: {{ compute_instance.networkInterfaces[0].accessConfigs[0].natIP }}
+          Internal IP: {{ compute_instance.networkInterfaces[0].networkIP }}
+          Environment: {{ deploy_env }}
+          Worker Role: {{ gcp_worker_role }}
+          Worker ID: {{ gcp_worker_id }}
+          Worker Name: {{ worker_name }}
+          ================================
+          Next steps:
+          1. Wait for VM to be ready (or run: ansible staging -i inventory/staging -m ping)
+          2. Apply base role: ansible-playbook playbooks/deploy/base.yml -e "deploy_env={{ deploy_env }}"
+          3. Deploy OpenClaw: ansible-playbook playbooks/deploy/openclaw.yml -e "deploy_env={{ deploy_env }} gcp_worker_role={{ gcp_worker_role }} gcp_worker_id={{ gcp_worker_id }}"
+          ================================

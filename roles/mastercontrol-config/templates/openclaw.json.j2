@@ -1,0 +1,133 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.3.13",
+    "lastTouchedAt": "{{ ansible_date_time.iso8601 }}"
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "{{ openclaw_model }}"
+      },
+      "workspace": "{{ openclaw_workspace }}",
+      "maxConcurrent": 2,
+      "subagents": {
+        "maxConcurrent": 4
+      },
+      "compaction": {
+        "mode": "safeguard",
+        "reserveTokensFloor": 12000,
+        "memoryFlush": {
+          "enabled": true,
+          "softThresholdTokens": 8000
+        }
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "name": "mastercontrol",
+        "workspace": "{{ openclaw_workspace }}",
+        "agentDir": "/home/{{ openclaw_user }}/.openclaw/agents/main/agent",
+        "model": "{{ openclaw_model }}"
+      }
+    ]
+  },
+  "messages": {
+    "ackReactionScope": "none",
+    "tts": {
+      "auto": "off"
+    }
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true
+  },
+  "session": {
+    "dmScope": "per-channel-peer"
+  },
+  "hooks": {
+    "internal": {
+      "enabled": true,
+      "entries": {
+        "boot-md": {
+          "enabled": true
+        },
+        "bootstrap-extra-files": {
+          "enabled": true
+        },
+        "command-logger": {
+          "enabled": true
+        },
+        "session-memory": {
+          "enabled": true
+        }
+      }
+    }
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "allowlist",
+      "botToken": "{{ telegram_bot_token }}",
+      "groups": {},
+      "allowFrom": {{ telegram_allowed_users | to_nice_json }},
+      "groupPolicy": "disabled",
+      "streaming": "partial"
+    }
+  },
+  "gateway": {
+    "port": {{ gateway_port }},
+    "mode": "{{ gateway_mode }}",
+    "bind": "lan",
+    "auth": {
+      "mode": "token",
+      "token": "{{ gateway_token }}"
+    },
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
+    },
+    "nodes": {
+      "denyCommands": [
+        "camera.snap",
+        "camera.clip",
+        "screen.record",
+        "calendar.add",
+        "contacts.add",
+        "reminders.add"
+      ]
+    }
+  },
+  "models": {
+    "providers": {
+      "ollama": {
+        "baseUrl": "{{ ollama_cloud_host | default('https://ollama.com') }}",
+        "api": "ollama",
+        "models": [
+          {
+            "id": "{{ ollama_cloud_model | default('glm-5') }}",
+            "name": "{{ ollama_cloud_model | default('glm-5') | upper }}",
+            "reasoning": false,
+            "input": ["text"],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 131072,
+            "maxTokens": 1310720
+          }
+        ]
+      }
+    }
+  },
+  "plugins": {
+    "entries": {
+      "telegram": {
+        "enabled": true
+      }
+    }
+  }
+}

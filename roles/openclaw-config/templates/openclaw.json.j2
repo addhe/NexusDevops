@@ -1,0 +1,94 @@
+{
+  "meta": {
+    "lastTouchedVersion": "{{ openclaw_version | default('2026.3.2') }}"
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "{{ openclaw_model }}",
+        "fallbacks": []
+      },
+      "models": {
+        "{{ openclaw_model }}": {}
+      },
+      "workspace": "{{ openclaw_workspace }}",
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "name": "main",
+        "workspace": "{{ openclaw_workspace }}"
+      }
+    ]
+  },
+  "tools": {
+    "web": {
+      "search": {
+        "enabled": false
+      },
+      "fetch": {
+        "enabled": true
+      }
+    }
+  }{% if ollama_cloud_enabled | default(false) | bool %},
+  "models": {
+    "providers": {
+      "ollama": {
+        "baseUrl": "{{ ollama_cloud_host | default('https://ollama.com') }}",
+        "api": "ollama",
+        "models": [
+          {
+            "id": "{{ ollama_cloud_model | default('glm-5') }}",
+            "name": "{{ ollama_cloud_model | default('glm-5') | upper }}",
+            "reasoning": false,
+            "input": ["text"],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 131072,
+            "maxTokens": 1310720
+          }
+        ]
+      }
+    }
+  }{% endif %},
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "pairing",
+      "botToken": "{{ telegram_bot_token }}",
+      "allowFrom": {{ telegram_allowed_users | to_json }},
+      "groupPolicy": "open",
+      "streaming": "partial"
+    }
+  },
+  "gateway": {
+    "port": {{ gateway_port }},
+    "mode": "{{ gateway_mode | default('local') }}",
+    "bind": "{{ gateway_bind | default('lan') }}",
+    "controlUi": {
+      "allowedOrigins": [
+        "http://localhost:{{ gateway_port }}",
+        "http://127.0.0.1:{{ gateway_port }}",
+        "http://{{ ansible_default_ipv4.address }}:{{ gateway_port }}"
+      ]
+    },
+    "auth": {
+      "mode": "token",
+      "token": "{{ gateway_token }}"
+    }
+  }
+}

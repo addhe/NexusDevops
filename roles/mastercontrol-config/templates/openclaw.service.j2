@@ -1,0 +1,30 @@
+[Unit]
+Description=IrishEcho MasterControl - OpenClaw Gateway
+Documentation=https://github.com/anthropics/openclaw
+After=network.target
+
+[Service]
+Type=simple
+User={{ openclaw_user }}
+Group={{ openclaw_group }}
+WorkingDirectory=/home/{{ openclaw_user }}/.openclaw
+ExecStart=/usr/bin/openclaw gateway
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=mastercontrol
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=false
+ReadWritePaths=/home/{{ openclaw_user }}/.openclaw
+
+# Environment
+Environment="NODE_ENV=production"
+EnvironmentFile=/home/{{ openclaw_user }}/.openclaw/.env
+
+[Install]
+WantedBy=multi-user.target
