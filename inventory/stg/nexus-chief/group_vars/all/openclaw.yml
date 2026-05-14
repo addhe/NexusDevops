@@ -4,7 +4,7 @@
 # =====================================
 
 # Application
-openclaw_version: "latest"
+openclaw_version: "2026.5.7"
 openclaw_user: "openclaw"
 openclaw_group: "openclaw"
 openclaw_workspace: "/home/openclaw/.openclaw/workspace"

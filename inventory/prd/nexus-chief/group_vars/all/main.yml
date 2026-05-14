@@ -39,6 +39,10 @@ instance_tags:
   - "production"
   - "openclaw"
 
+# Worker Persona
+gcp_worker_role: "control-plane"
+gcp_worker_id: "001"
+
 # System
 system_timezone: "Asia/Jakarta"
 nodejs_version: "22"

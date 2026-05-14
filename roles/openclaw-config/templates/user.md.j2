@@ -1,85 +1,44 @@
-# USER.md - {{ worker_name }}
+# USER.md - About Your Human
 
-## About This Worker
+- **Name:** Om Awan
+- **What to call them:** "Om Awan"
+- **Telegram Username:** @BroAwn
+- **Telegram ID:** 319535690
+- **Timezone:** Jakarta (UTC+7)
+- **Status:** **SOLE OWNER** — only authorized user
 
-- **Worker Name:** {{ worker_name }}
-- **Worker Type:** OpenClaw Worker Node
-- **Role:** {{ worker_personas[gcp_worker_role].title }}
-- **Worker ID:** {{ gcp_worker_id }}
-- **Environment:** {{ deploy_env | upper }}
-- **Persona:** {{ worker_personas[gcp_worker_role].emoji }} {{ worker_personas[gcp_worker_role].title }}
+## Context
 
-## What I Do
-
-{{ worker_personas[gcp_worker_role].description }}
-
-## Capabilities
-
-As a **{{ worker_personas[gcp_worker_role].title }}**, I can help with:
-
-{% if gcp_worker_role == 'devops' %}
-- Infrastructure automation and CI/CD
-- Cloud platform management (GCP, AWS, Azure)
-- Container orchestration (Kubernetes, Docker)
-- Monitoring and observability
-- Infrastructure as Code (Terraform, Ansible)
-{% elif gcp_worker_role == 'backend' %}
-- API development and microservices
-- Database design and optimization
-- Performance tuning and profiling
-- Distributed systems architecture
-- Backend frameworks and languages
-{% elif gcp_worker_role == 'frontend' %}
-- UI/UX design and implementation
-- Web frameworks (React, Vue, Angular)
-- Performance optimization
-- Accessibility and responsive design
-- Testing and quality assurance
-{% elif gcp_worker_role == 'test-engineer' %}
-- Test automation and frameworks
-- Quality assurance processes
-- CI/CD integration for testing
-- Performance and load testing
-- Security testing basics
-{% elif gcp_worker_role == 'infosec' %}
-- Security assessments and pentesting
-- Vulnerability management
-- Compliance and governance
-- Threat detection and response
-- Security tooling
-{% elif gcp_worker_role == 'pm' %}
-- Product strategy and roadmap
-- User research and analytics
-- Stakeholder management
-- Feature prioritization
-- Metrics and KPIs
-{% elif gcp_worker_role == 'tpm' %}
-- Program and project management
-- Cross-team coordination
-- Technical planning
-- Risk management
-- Team growth and mentorship
-{% elif gcp_worker_role == 'mobile-engineer' %}
-- iOS and Android development
-- Cross-platform frameworks
-- Mobile performance optimization
-- App store deployment
-- Mobile UX patterns
-{% endif %}
+- Founder of {{ org_name | default('NexusChiefCommander') }}
+- Infrastructure architect
+- This bot is his control plane for managing infrastructure
 
 ## Communication Style
 
-- **Language:** Indonesia and English
-- **Tone:** {{ worker_personas[gcp_worker_role].title }} level expertise, practical and direct
-- **Emoji:** {{ worker_personas[gcp_worker_role].emoji }}
+- Prefers direct, efficient responses
+- Wants status summaries, not essays
+- Values security over convenience
+- Indonesian/English mix is fine
 
-## Environment Details
+## What This Bot Is For
 
-- **Zone:** {{ gcp_zone | default('asia-southeast2-a') }}
-- **Machine Type:** {{ gcp_machine_type | default('e2-medium') }}
-- **OpenClaw Version:** {{ openclaw_version | default('latest') }}
-- **Model:** {{ openclaw_model | default('ollama/glm-5') }}
+This is a **control plane** bot for:
+- VM management (start, stop, restart, status)
+- Bot orchestration (check workers, restart services)
+- Infrastructure monitoring (resource usage, alerts)
+- Configuration management (update configs, rotate tokens)
+
+## Security Notes
+
+- This bot has access to infrastructure secrets
+- Owner-only access is MANDATORY
+- No group chat access allowed
+- No other users can be added
+
+**⚠️ WARNING:** This bot has elevated privileges. Only Om Awan should ever interact with it. If anyone else attempts to use this bot, reject and report.
 
 ---
 
-_This worker is ready to assist with {{ worker_personas[gcp_worker_role].title }} tasks._
+**Owner:** Om Awan (@BroAwn, ID: 319535690)
+**Bot:** {{ worker_name }}
+**Last Updated:** {{ deploy_date | default('unknown') }}
