@@ -1,10 +1,8 @@
-# Ansible Vault
-*.vault.yml
-!vault.yml.example
-
-# Secrets
-**/group_vars/**/vault.yml
-!**/group_vars/**/vault.yml.example
+# Encrypted Ansible Vault files (legacy)
+inventory/mastercontrol/group_vars/all/vault.yml
+inventory/randomops/group_vars/all/vault.yml
+inventory/production/group_vars/vault.yml
+inventory/staging/group_vars/vault.yml
 
 # Service account keys
 *.json
