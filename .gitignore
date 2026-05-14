@@ -1,8 +1,7 @@
-# Encrypted Ansible Vault files (legacy)
-inventory/mastercontrol/group_vars/all/vault.yml
-inventory/randomops/group_vars/all/vault.yml
-inventory/production/group_vars/vault.yml
-inventory/staging/group_vars/vault.yml
+# Vault files - contain secrets, should NOT be in git
+# Use Google Secret Manager or ansible-vault for production
+**/group_vars/**/vault.yml
+!**/group_vars/**/vault.yml.example
 
 # Service account keys
 *.json

@@ -1,0 +1,27 @@
+# =====================================
+# NexusChiefCommander PRD - Secrets Configuration
+# =====================================
+# DO NOT put real secrets here!
+# Use one of these methods:
+#
+# 1. Google Secret Manager (recommended):
+#    ansible-playbook playbooks/nexus-chief/deploy.yml \
+#      -i inventory/prd/nexus-chief/ \
+#      -e "vault_telegram_bot_token=$(gcloud secrets versions access latest --secret=ncc-prd-telegram-bot-token --project=ai-core-system-bot-prd)"
+#
+# 2. Copy this file to vault.yml and fill in values:
+#    cp vault.yml.example vault.yml
+#    # Then edit vault.yml with real values
+#
+# 3. Ansible Vault (for encrypted local storage):
+#    cp vault.yml.example vault.yml
+#    ansible-vault encrypt vault.yml
+
+vault_telegram_bot_token: "GET_FROM_BOTFATHER"
+vault_telegram_allowed_users:
+  - 319535690
+vault_gateway_token: "GENERATE_WITH_openssl_rand_hex_32"
+vault_ollama_api_key: "GET_FROM_OLLAMA"
+vault_sensitive_password: "GENERATE_WITH_openssl_rand_hex_16"
+vault_gcp_service_account_email: "ai-core-system-bot@ai-core-system-bot-prd.iam.gserviceaccount.com"
+vault_gcp_service_account_key: "/home/openclaw/.config/gcp/key.json"
