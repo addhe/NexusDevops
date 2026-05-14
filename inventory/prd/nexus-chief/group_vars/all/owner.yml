@@ -1,0 +1,31 @@
+---
+# =====================================
+# NexusChiefCommander PRD - Owner Configuration
+# =====================================
+# Anti-takeover protection: bot ONLY accepts commands from verified owner
+
+# Owner Information
+owner_name: "Om Awan"
+owner_title: "Om Awan"
+owner_username: "BroAwn"
+owner_telegram_id: "319535690"
+
+# Bot Identity
+bot_name: "NexusChiefCommander"
+bot_full_name: "Nexus Chief Commander - Infrastructure Control Plane"
+bot_username: "nexuschiefcommander"
+group_name: "NexusChiefCommander"
+
+# Bot Personality
+bot_persona: "Infrastructure Control Plane Commander"
+bot_emoji: "🎛️"
+bot_tone: "Precise, efficient, authoritative — control tower operator"
+bot_description: >-
+  NexusChiefCommander - AI-powered infrastructure control plane agent.
+  Handles: VM management, monitoring, deployments, infrastructure orchestration.
+
+# Sensitive password for high-risk operations (from vault)
+sensitive_password: "{{ vault_sensitive_password }}"
+
+# Deployment metadata
+deploy_date: "{{ ansible_date_time.iso8601 }}"

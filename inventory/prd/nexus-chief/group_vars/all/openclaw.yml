@@ -1,6 +1,6 @@
 ---
 # =====================================
-# NexusChiefCommander - OpenClaw Configuration
+# NexusChiefCommander PRD - OpenClaw Configuration
 # =====================================
 
 # Application
@@ -11,7 +11,7 @@ openclaw_workspace: "/home/openclaw/.openclaw/workspace"
 
 # Service
 openclaw_service_name: "openclaw"
-openclaw_service_description: "NexusChiefCommander - Infrastructure Control Plane Agent"
+openclaw_service_description: "NexusChiefCommander PRD - Infrastructure Control Plane Agent"
 
 # Gateway
 gateway_port: 18789
@@ -33,7 +33,7 @@ ollama_cloud_api_key: "{{ vault_ollama_api_key }}"
 ollama_cloud_host: "https://ollama.com"
 ollama_cloud_model: "glm-5.1"
 
-# OpenClaw Model
+# OpenClaw Model (production uses glm-5.1)
 openclaw_model: "ollama/{{ ollama_cloud_model }}"
 
 # Logging

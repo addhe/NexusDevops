@@ -3,14 +3,15 @@
 # =====================================
 # Deploys NexusChiefCommander (OpenClaw agent) to the provisioned VM
 #
-# Usage (dynamic inventory):
+# Usage (staging):
 #   ansible-playbook playbooks/nexus-chief/deploy.yml \
-#     -i inventory/nexus-chief/
+#     -i inventory/stg/nexus-chief/ \
+#     -e "deploy_env=staging"
 #
-# Usage (specific host):
+# Usage (production):
 #   ansible-playbook playbooks/nexus-chief/deploy.yml \
-#     -i inventory/nexus-chief/ \
-#     --limit nexus-chief-001-prd
+#     -i inventory/prd/nexus-chief/ \
+#     -e "deploy_env=production"
 
 - name: Deploy NexusChiefCommander
   hosts: nexus_chief
@@ -18,25 +19,29 @@
   gather_facts: true
 
   pre_tasks:
+    - name: Set env directory
+      set_fact:
+        env_dir: "{{ playbook_dir | dirname | dirname }}/inventory/{{ deploy_env | default('stg') }}/nexus-chief"
+
     - name: Load all vars
       include_vars:
-        file: "{{ playbook_dir | dirname | dirname }}/inventory/nexus-chief/group_vars/all/main.yml"
+        file: "{{ env_dir }}/group_vars/all/main.yml"
 
     - name: Load vault vars
       include_vars:
-        file: "{{ playbook_dir | dirname | dirname }}/inventory/nexus-chief/group_vars/all/vault.yml"
+        file: "{{ env_dir }}/group_vars/all/vault.yml"
 
     - name: Load openclaw vars
       include_vars:
-        file: "{{ playbook_dir | dirname | dirname }}/inventory/nexus-chief/group_vars/all/openclaw.yml"
+        file: "{{ env_dir }}/group_vars/all/openclaw.yml"
 
     - name: Load owner vars
       include_vars:
-        file: "{{ playbook_dir | dirname | dirname }}/inventory/nexus-chief/group_vars/all/owner.yml"
+        file: "{{ env_dir }}/group_vars/all/owner.yml"
 
     - name: Load gcp vars
       include_vars:
-        file: "{{ playbook_dir | dirname | dirname }}/inventory/nexus-chief/group_vars/all/gcp.yml"
+        file: "{{ env_dir }}/group_vars/all/gcp.yml"
 
     - name: Wait for SSH
       wait_for_connection:
@@ -49,10 +54,11 @@
       debug:
         msg: |
           ================================
-          Deploying NexusChiefCommander
+          Deploying NexusChiefCommander ({{ deploy_env | default('stg') }})
           ================================
           Host: {{ ansible_host | default(inventory_hostname) }}
-          Environment: production
+          Environment: {{ deploy_env | default('stg') }}
+          Instance: {{ instance_name | default('nexus-chief-001-stg') }}
           Model: {{ openclaw_model }}
           Gateway Port: {{ gateway_port }}
           ================================
@@ -90,10 +96,11 @@
       debug:
         msg: |
           ================================
-          NexusChiefCommander Deployed! 🎛️
+          NexusChiefCommander Deployed! 🎛️ ({{ deploy_env | default('stg') }})
           ================================
           Host: {{ ansible_host | default(inventory_hostname) }}
-          Environment: production
+          Environment: {{ deploy_env | default('stg') }}
+          Instance: {{ instance_name | default('nexus-chief-001-stg') }}
           Gateway Port: {{ gateway_port }}
           Model: {{ openclaw_model }}
           ================================

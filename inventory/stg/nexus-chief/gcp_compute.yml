@@ -1,13 +1,13 @@
 ---
-# GCP Dynamic Inventory Configuration for NexusChiefCommander
+# GCP Dynamic Inventory Configuration for NexusChiefCommander (STG)
 # =====================================
 
 plugin: gcp_compute
 projects:
-  - "{{ gcp_project_id }}"
+  - "ai-core-system-bot-stg"
 filters: []
 zones:
-  - "{{ gcp_zone }}"
+  - "asia-southeast2-a"
 auth_kind: application
 scopes:
   - "https://www.googleapis.com/auth/compute.readonly"

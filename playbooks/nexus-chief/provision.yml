@@ -4,7 +4,13 @@
 # Provisions a GCP e2-standard-2 spot instance for NexusChiefCommander
 #
 # Usage:
-#   ansible-playbook playbooks/nexus-chief/provision.yml
+#   # Staging
+#   ansible-playbook playbooks/nexus-chief/provision.yml \
+#     -e "deploy_env=staging"
+#
+#   # Production
+#   ansible-playbook playbooks/nexus-chief/provision.yml \
+#     -e "deploy_env=production"
 
 - name: Provision NexusChiefCommander VM
   hosts: localhost
@@ -12,26 +18,28 @@
   gather_facts: true
 
   pre_tasks:
-    - name: Include all vars
+    - name: Set environment-specific vars
       include_vars:
-        file: "{{ playbook_dir | dirname | dirname }}/inventory/nexus-chief/group_vars/all/main.yml"
+        file: "{{ playbook_dir | dirname | dirname }}/inventory/{{ deploy_env | default('stg') }}/nexus-chief/group_vars/all/main.yml"
+      when: deploy_env is defined or true
 
     - name: Include vault vars
       include_vars:
-        file: "{{ playbook_dir | dirname | dirname }}/inventory/nexus-chief/group_vars/all/vault.yml"
+        file: "{{ playbook_dir | dirname | dirname }}/inventory/{{ deploy_env | default('stg') }}/nexus-chief/group_vars/all/vault.yml"
 
     - name: Include gcp vars
       include_vars:
-        file: "{{ playbook_dir | dirname | dirname }}/inventory/nexus-chief/group_vars/all/gcp.yml"
+        file: "{{ playbook_dir | dirname | dirname }}/inventory/{{ deploy_env | default('stg') }}/nexus-chief/group_vars/all/gcp.yml"
 
     - name: Display provision info
       debug:
         msg: |
           ================================
-          Provisioning NexusChiefCommander
+          Provisioning NexusChiefCommander ({{ deploy_env | default('stg') }})
           ================================
           Project: {{ gcp_project_id }}
           Zone: {{ gcp_zone }}
+          Instance: {{ instance_name }}
           Machine Type: {{ instance_type }}
           Disk: {{ disk_size }}GB {{ disk_type }}
           Network: {{ gcp_network }} / {{ gcp_subnet }}
@@ -41,24 +49,16 @@
   roles:
     - role: gcp-compute
       vars:
-        gcp_instance_name: "nexus-chief-001-prd"
+        gcp_instance_name: "{{ instance_name }}"
         gcp_machine_type: "{{ instance_type }}"
         gcp_machine_type_spot: "{{ instance_type }}"
         gcp_disk_size_gb: "{{ disk_size }}"
         gcp_disk_type: "{{ disk_type }}"
         gcp_spot_instance: "{{ provisioning_model == 'SPOT' }}"
         gcp_network: "{{ gcp_network }}"
-        gcp_subnetwork: "{{ gcp_subnet }}"
-        gcp_instance_labels:
-          environment: "production"
-          managed_by: "ansible"
-          project: "{{ org_name }}"
-          role: "control-plane"
-          cost_center: "production-infrastructure"
-        gcp_instance_tags:
-          - "production"
-          - "nexus-chief"
-          - "ansible-managed"
+        gcp_subnetwork: "{{ gcp_subnetwork | default(gcp_subnet) }}"
+        gcp_instance_labels: "{{ gcp_common_labels }}"
+        gcp_instance_tags: "{{ gcp_common_tags | default(instance_tags) }}"
         gcp_firewall_allow_ssh: true
         gcp_firewall_allow_http: false
         gcp_firewall_allow_https: false
@@ -69,12 +69,12 @@
       debug:
         msg: |
           ================================
-          NexusChiefCommander VM Provisioned!
+          NexusChiefCommander VM Provisioned! ({{ deploy_env | default('stg') }})
           ================================
-          Instance Name: {{ instance_name | default(gcp_instance_name) }}
-          External IP: {{ compute_instance.networkInterfaces[0].accessConfigs[0].natIP | default('N/A') }}
+          Instance Name: {{ instance_name }}
+          Project: {{ gcp_project_id }}
           Zone: {{ gcp_zone }}
           ================================
           Next steps:
-          1. ansible-playbook playbooks/nexus-chief/deploy.yml
+          ansible-playbook playbooks/nexus-chief/deploy.yml -e "deploy_env={{ deploy_env | default('stg') }}"
           ===================================

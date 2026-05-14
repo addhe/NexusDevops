@@ -1,8 +1,12 @@
 ---
 # =====================================
-# NexusChiefCommander - Common Configuration
+# NexusChiefCommander PRD - Common Configuration
 # =====================================
-# NexusChiefCommander - Infrastructure Control Plane Agent for ai-core-system-bot-prd
+# NexusChiefCommander - Infrastructure Control Plane Agent (Production)
+
+# Environment
+deploy_env: "production"
+env_short: "prd"
 
 # Organization
 org_name: "NexusChiefCommander"
@@ -10,19 +14,20 @@ org_short: "ncc"
 application: "nexus-chief"
 
 # GCP Project
-gcp_project: "ai-core-system-bot-stg"
-gcp_project_id: "ai-core-system-bot-stg"
+gcp_project: "ai-core-system-bot-prd"
+gcp_project_id: "ai-core-system-bot-prd"
 gcp_region: "asia-southeast2"
-gcp_zone: "asia-southeast2-a"
+gcp_zone: "asia-southeast2-b"
 
 # Service Account
-gcp_service_account: "ai-core-system-bot@ai-core-system-bot-stg.iam.gserviceaccount.com"
+gcp_service_account: "ai-core-system-bot@ai-core-system-bot-prd.iam.gserviceaccount.com"
 
-# Network - use custom-vpc
+# Network
 gcp_network: "custom-vpc"
-gcp_subnet: "custom-vpc-dev-subnet"
+gcp_subnet: "custom-vpc-prod-subnet"
 
 # Instance Settings
+instance_name: "nexus-chief-001-prd"
 instance_type: "e2-standard-2"
 disk_size: 30
 disk_type: "pd-ssd"
