@@ -21,7 +21,7 @@
   pre_tasks:
     - name: Set env directory
       set_fact:
-        env_dir: "{{ playbook_dir | dirname | dirname }}/inventory/{{ deploy_env | default('stg') }}/nexus-chief"
+        env_dir: "{{ playbook_dir | dirname | dirname }}/inventory/{{ 'stg' if (deploy_env | default('staging')) == 'staging' else 'prd' }}/nexus-chief"
 
     - name: Load all vars
       include_vars:

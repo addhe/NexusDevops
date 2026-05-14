@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastTouchedVersion": "{{ openclaw_version | default('2026.3.2') }}"
+    "lastTouchedVersion": "{{ openclaw_version | default('2026.5.7') }}"
   },
   "agents": {
     "defaults": {
@@ -71,8 +71,12 @@
       "dmPolicy": "pairing",
       "botToken": "{{ telegram_bot_token }}",
       "allowFrom": {{ telegram_allowed_users | to_json }},
-      "groupPolicy": "open",
-      "streaming": "partial"
+      "groupPolicy": "{{ telegram_group_policy | default('open') }}",
+      "groupAllowFrom": {{ telegram_group_allow_from | default(['*']) | to_json }},
+      "groups": {{ telegram_groups | default({}) | to_json }},
+      "streaming": {
+        "mode": "partial"
+      }
     }
   },
   "gateway": {
@@ -89,6 +93,12 @@
     "auth": {
       "mode": "token",
       "token": "{{ gateway_token }}"
+    }
+  },
+  "messages": {
+    "ackReactionScope": "{{ ack_reaction_scope | default('all') }}",
+    "groupChat": {
+      "visibleReplies": "{{ group_chat_visible_replies | default('automatic') }}"
     }
   }
 }

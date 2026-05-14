@@ -21,6 +21,14 @@ gateway_mode: "local"
 # Telegram (from vault)
 telegram_bot_token: "{{ vault_telegram_bot_token }}"
 telegram_allowed_users: "{{ vault_telegram_allowed_users }}"
+telegram_group_policy: "open"
+telegram_group_allow_from:
+  - "*"
+telegram_groups:
+  "-1003992326232":
+    requireMention: false
+    allowFrom:
+      - "*"
 
 # Gateway Auth (from vault)
 gateway_token: "{{ vault_gateway_token }}"
@@ -35,6 +43,10 @@ ollama_cloud_model: "glm-5.1"
 
 # OpenClaw Model (production uses glm-5.1)
 openclaw_model: "ollama/{{ ollama_cloud_model }}"
+
+# Messages
+group_chat_visible_replies: "automatic"
+ack_reaction_scope: "all"
 
 # Logging
 openclaw_log_level: "info"
