@@ -20,7 +20,7 @@ gcp_region: "asia-southeast2"
 gcp_zone: "asia-southeast2-a"
 
 # Service Account
-gcp_service_account: "ai-core-system-bot@ai-core-system-bot-stg.iam.gserviceaccount.com"
+gcp_service_account: "nexus-chief-commander@ai-core-system-bot-stg.iam.gserviceaccount.com"
 
 # Network
 gcp_network: "custom-vpc"
