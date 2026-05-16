@@ -1,0 +1,64 @@
+{
+  "alerts": [
+    {
+      "name": "High CPU Usage",
+      "description": "Alert when CPU usage exceeds 80% for 5 minutes",
+      "query": "avg(rate(system_cpu_time{host_name=~\".*ocl-worker-devops.*\",state!=\"idle\"}[5m])) * 100 > 80",
+      "severity": "warning",
+      "evalInterval": 60,
+      "for": "5m",
+      "labels": {
+        "team": "infrastructure",
+        "service": "bots"
+      }
+    },
+    {
+      "name": "High Memory Usage",
+      "description": "Alert when memory usage exceeds 90% for 5 minutes",
+      "query": "(1 - (system_memory_usage{host_name=~\".*ocl-worker-devops.*\",state=\"free\"} / system_memory_usage{host_name=~\".*ocl-worker-devops.*\",state=\"total\"})) * 100 > 90",
+      "severity": "critical",
+      "evalInterval": 60,
+      "for": "5m",
+      "labels": {
+        "team": "infrastructure",
+        "service": "bots"
+      }
+    },
+    {
+      "name": "Disk Space Low",
+      "description": "Alert when disk usage exceeds 85%",
+      "query": "(system_filesystem_usage{host_name=~\".*ocl-worker-devops.*\",state=\"used\"} / system_filesystem_usage{host_name=~\".*ocl-worker-devops.*\",state=\"total\"}) * 100 > 85",
+      "severity": "warning",
+      "evalInterval": 300,
+      "for": "10m",
+      "labels": {
+        "team": "infrastructure",
+        "service": "bots"
+      }
+    },
+    {
+      "name": "Container High CPU",
+      "description": "Alert when container CPU exceeds 70%",
+      "query": "container_cpu_utilization{container_name!=\"\"} > 70",
+      "severity": "warning",
+      "evalInterval": 60,
+      "for": "5m",
+      "labels": {
+        "team": "infrastructure",
+        "service": "signoz"
+      }
+    },
+    {
+      "name": "Container High Memory",
+      "description": "Alert when container memory exceeds 80%",
+      "query": "container_memory_percent{container_name!=\"\"} > 80",
+      "severity": "warning",
+      "evalInterval": 60,
+      "for": "5m",
+      "labels": {
+        "team": "infrastructure",
+        "service": "signoz"
+      }
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "title": "Bot Infrastructure Overview",
+  "description": "Overview of ocl-worker-devops-002-stg infrastructure - NexusDevOpsBot, NexusByteBot, and SigNoz",
+  "tags": ["infrastructure", "bots", "monitoring"],
+  "widgets": [
+    {
+      "title": "Host CPU Usage",
+      "description": "System CPU utilization",
+      "panelTypes": "graph",
+      "query": {
+        "queryType": "promql",
+        "promql": [
+          {
+            "query": "avg(rate(system_cpu_time{host_name=~\".*ocl-worker-devops.*\"}[5m])) * 100",
+            "legend": "CPU %"
+          }
+        ]
+      },
+      "grid": {"x": 0, "y": 0, "w": 6, "h": 4}
+    },
+    {
+      "title": "Host Memory Usage",
+      "description": "System memory utilization",
+      "panelTypes": "graph",
+      "query": {
+        "queryType": "promql",
+        "promql": [
+          {
+            "query": "(1 - (system_memory_usage{host_name=~\".*ocl-worker-devops.*\",state=\"free\"} / system_memory_usage{host_name=~\".*ocl-worker-devops.*\",state=\"total\"})) * 100",
+            "legend": "Memory %"
+          }
+        ]
+      },
+      "grid": {"x": 6, "y": 0, "w": 6, "h": 4}
+    },
+    {
+      "title": "Docker Container CPU",
+      "description": "Container CPU utilization",
+      "panelTypes": "graph",
+      "query": {
+        "queryType": "promql",
+        "promql": [
+          {
+            "query": "container_cpu_utilization{container_name!=\"\"}",
+            "legend": "{{container_name}}"
+          }
+        ]
+      },
+      "grid": {"x": 0, "y": 4, "w": 6, "h": 4}
+    },
+    {
+      "title": "Docker Container Memory",
+      "description": "Container memory percentage",
+      "panelTypes": "graph",
+      "query": {
+        "queryType": "promql",
+        "promql": [
+          {
+            "query": "container_memory_percent{container_name!=\"\"}",
+            "legend": "{{container_name}}"
+          }
+        ]
+      },
+      "grid": {"x": 6, "y": 4, "w": 6, "h": 4}
+    },
+    {
+      "title": "Disk Usage",
+      "description": "Filesystem disk usage",
+      "panelTypes": "graph",
+      "query": {
+        "queryType": "promql",
+        "promql": [
+          {
+            "query": "system_filesystem_usage{host_name=~\".*ocl-worker-devops.*\",state=\"used\"} / system_filesystem_usage{host_name=~\".*ocl-worker-devops.*\",state=\"total\"} * 100",
+            "legend": "{{device}}"
+          }
+        ]
+      },
+      "grid": {"x": 0, "y": 8, "w": 6, "h": 4}
+    },
+    {
+      "title": "Network I/O",
+      "description": "Network bytes sent/received",
+      "panelTypes": "graph",
+      "query": {
+        "queryType": "promql",
+        "promql": [
+          {
+            "query": "rate(system_network_io{host_name=~\".*ocl-worker-devops.*\"}[5m])",
+            "legend": "{{interface}} - {{direction}}"
+          }
+        ]
+      },
+      "grid": {"x": 6, "y": 8, "w": 6, "h": 4}
+    }
+  ]
+}
