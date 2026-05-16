@@ -1,0 +1,70 @@
+{
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "botToken": "{{ openclaw_telegram_bot_token }}",
+      "allowFrom": [],
+      "groupAllowFrom": [],
+      "groups": {
+        "{{ openclaw_telegram_group_id }}": {
+          "enabled": true,
+          "requireMention": false
+        }
+      }
+    }
+  },
+  "gateway": {
+    "bind": "lan",
+    "port": 8080,
+    "auth": {
+      "mode": "token",
+      "token": "{{ openclaw_gateway_token }}"
+    },
+    "mode": "local"
+  },
+  "commands": {
+    "ownerAllowFrom": [
+      "telegram:{{ openclaw_owner_telegram_id }}"
+    ]
+  },
+  "agents": {
+    "defaults": {
+      "agentRuntime": {
+        "id": "openclaw"
+      },
+      "model": {
+        "primary": "ollama/glm-5"
+      }
+    }
+  },
+  "env": {
+    "vars": {
+      "OLLAMA_API_KEY": "{{ openclaw_ollama_api_key }}",
+      "OLLAMA_HOST": "{{ openclaw_ollama_host }}"
+    }
+  },
+  "models": {
+    "providers": {
+      "ollama": {
+        "baseUrl": "{{ openclaw_ollama_host }}",
+        "api": "ollama",
+        "models": [
+          {
+            "id": "glm-5",
+            "name": "GLM-5",
+            "reasoning": false,
+            "input": ["text"],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 131072,
+            "maxTokens": 1310720
+          }
+        ]
+      }
+    }
+  }
+}
