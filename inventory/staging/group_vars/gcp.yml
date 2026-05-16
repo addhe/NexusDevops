@@ -8,9 +8,9 @@ gcp_project_id: "{{ vault_gcp_project_id }}"
 gcp_region: "asia-southeast2"  # Jakarta
 gcp_zone: "asia-southeast2-a"
 
-# GCP Authentication (using Service Account Key)
-gcp_auth_kind: "serviceaccount"
-gcp_service_account_file: "/home/addheputra/openclaw-config-backup/ansible/inventory/staging/gcp-sa-key.json"
+# GCP Authentication (using GCE metadata / machine account)
+gcp_auth_kind: "machineaccount"
+gcp_service_account_file: ""  # Not needed for machine account
 
 # Service Account for VM instances (uses default compute SA)
 gcp_service_account_email: "361046956504-compute@developer.gserviceaccount.com"

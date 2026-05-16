@@ -18,7 +18,8 @@
 - name: Provision OpenClaw Worker VM
   hosts: localhost
   connection: local
-  gather_facts: yes
+  gather_facts: no
+  become: no
   vars:
     deploy_env: staging
     base_dir: "{{ playbook_dir | dirname | dirname }}"
