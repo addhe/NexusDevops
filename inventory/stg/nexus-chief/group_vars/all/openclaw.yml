@@ -48,5 +48,8 @@ openclaw_model: "ollama/{{ ollama_cloud_model }}"
 group_chat_visible_replies: "automatic"
 ack_reaction_scope: "all"
 
+# Session
+session_scope: "global"
+
 # Logging
 openclaw_log_level: "debug"
