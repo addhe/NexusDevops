@@ -1,0 +1,59 @@
+# OpenTelemetry Collector Config for SigNoz
+# Collects host metrics and Docker container metrics
+
+receivers:
+  # Host metrics receiver
+  hostmetrics:
+    collection_interval: 30s
+    scrapers:
+      cpu:
+      disk:
+      filesystem:
+      load:
+      memory:
+      network:
+      paging:
+      processes:
+
+  # Prometheus receiver for Docker metrics (from cAdvisor)
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'cadvisor'
+          scrape_interval: 30s
+          static_configs:
+            - targets: ['cadvisor:8080']
+
+processors:
+  batch:
+    timeout: 5s
+    send_batch_size: 1000
+
+  # Add host name to all metrics
+  attributes:
+    actions:
+      - key: host_name
+        value: "ocl-worker-devops-002-stg"
+        action: insert
+
+exporters:
+  # Export to SigNoz OTLP
+  otlp:
+    endpoint: "signoz-collector:4317"
+    tls:
+      insecure: true
+    sending_queue:
+      queue_size: 100
+    retry_on_failure:
+      enabled: true
+
+  # Export to Prometheus for local viewing
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+
+service:
+  pipelines:
+    metrics:
+      receivers: [hostmetrics, prometheus]
+      processors: [attributes, batch]
+      exporters: [otlp]
