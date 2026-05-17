@@ -1,0 +1,95 @@
+{
+  "apiVersion": "signoz.io/v1alpha1",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "bot-infrastructure-overview",
+    "description": "Infrastructure monitoring for ocl-worker-devops-002-stg bots"
+  },
+  "spec": {
+    "title": "Bot Infrastructure Overview",
+    "description": "Overview of ocl-worker-devops-002-stg - NexusDevOpsBot, NexusByteBot, SigNoz",
+    "tags": ["infrastructure", "bots", "monitoring"],
+    "panels": [
+      {
+        "id": "panel-1",
+        "title": "Host CPU Usage",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "rate(process.cpu.time{host_name!=\"\"}[5m])",
+            "legendFormat": "{{host_name}}"
+          }
+        ],
+        "options": {
+          "legend": {"displayMode": "list", "placement": "bottom"},
+          "tooltip": {"mode": "multi"}
+        }
+      },
+      {
+        "id": "panel-2",
+        "title": "Host Memory Usage",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "process.memory.usage{host_name!=\"\"}",
+            "legendFormat": "{{host_name}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {"unit": "bytes"}
+        }
+      },
+      {
+        "id": "panel-3",
+        "title": "Container CPU Usage",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "rate(container_cpu_usage_seconds_total{container_name!=\"\"}[5m])",
+            "legendFormat": "{{container_name}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {"unit": "percentunit"}
+        }
+      },
+      {
+        "id": "panel-4",
+        "title": "Container Memory Usage",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "container_memory_usage_total{container_name!=\"\"}",
+            "legendFormat": "{{container_name}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {"unit": "bytes"}
+        }
+      },
+      {
+        "id": "panel-5",
+        "title": "Network I/O",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16},
+        "targets": [
+          {
+            "expr": "rate(container_network_io_usage_rx_bytes{container_name!=\"\"}[5m])",
+            "legendFormat": "{{container_name}} RX"
+          },
+          {
+            "expr": "rate(container_network_io_usage_tx_bytes{container_name!=\"\"}[5m])",
+            "legendFormat": "{{container_name}} TX"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {"unit": "Bps"}
+        }
+      }
+    ]
+  }
+}
